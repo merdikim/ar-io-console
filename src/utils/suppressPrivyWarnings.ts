@@ -6,8 +6,8 @@ export function suppressPrivyDOMWarnings() {
   console.error = (...args) => {
     // Suppress the specific DOM nesting warning from Privy
     if (
-      args[0]?.includes?.('validateDOMNesting') &&
-      args[0]?.includes?.('<div> cannot appear as a descendant of <p>')
+      args[0]?.includes?.("validateDOMNesting") &&
+      args[0]?.includes?.("<div> cannot appear as a descendant of <p>")
     ) {
       return; // Suppress this specific warning
     }

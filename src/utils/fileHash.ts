@@ -11,20 +11,20 @@
  * - Graceful fallback: Falls back to main thread if workers unavailable
  */
 
-import { createSHA256 } from 'hash-wasm';
+import { createSHA256 } from "hash-wasm";
 
 /**
  * Convert Uint8Array to base64url string (no padding)
  * Matches ar.io gateway X-AR-IO-DIGEST format
  */
 function toBase64Url(bytes: Uint8Array): string {
-  let binary = '';
+  let binary = "";
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   const base64 = btoa(binary);
   // Convert to base64url: replace + with -, / with _, remove padding
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 // ============================================================================
@@ -54,14 +54,14 @@ export interface HashResult {
 
 // Worker message types
 interface WorkerRequest {
-  type: 'hash';
+  type: "hash";
   id: string;
   file: File;
   path: string;
 }
 
 interface WorkerResponse {
-  type: 'result' | 'error' | 'progress' | 'ready';
+  type: "result" | "error" | "progress" | "ready";
   id: string;
   path?: string;
   hash?: string;
@@ -76,11 +76,11 @@ interface WorkerResponse {
 
 // Dynamic concurrency based on file size
 const CONCURRENCY_CONFIG = {
-  tiny: { maxSize: 100 * 1024, concurrency: 50 },       // <100KB
-  small: { maxSize: 1024 * 1024, concurrency: 30 },     // <1MB
+  tiny: { maxSize: 100 * 1024, concurrency: 50 }, // <100KB
+  small: { maxSize: 1024 * 1024, concurrency: 30 }, // <1MB
   medium: { maxSize: 10 * 1024 * 1024, concurrency: 15 }, // <10MB
-  large: { maxSize: 50 * 1024 * 1024, concurrency: 8 },   // <50MB
-  huge: { maxSize: Infinity, concurrency: 4 },            // 50MB+
+  large: { maxSize: 50 * 1024 * 1024, concurrency: 8 }, // <50MB
+  huge: { maxSize: Infinity, concurrency: 4 }, // 50MB+
 };
 
 // Worker pool configuration
@@ -112,8 +112,8 @@ async function checkWorkerSupport(): Promise<boolean> {
   workerInitPromise = new Promise((resolve) => {
     try {
       // Check basic worker support
-      if (typeof Worker === 'undefined') {
-        console.warn('Web Workers not supported, using main thread fallback');
+      if (typeof Worker === "undefined") {
+        console.warn("Web Workers not supported, using main thread fallback");
         workersSupported = false;
         resolve(false);
         return;
@@ -135,12 +135,14 @@ async function checkWorkerSupport(): Promise<boolean> {
         });
       `;
 
-      const blob = new Blob([workerCode], { type: 'application/javascript' });
-      const testWorker = new Worker(URL.createObjectURL(blob), { type: 'module' });
+      const blob = new Blob([workerCode], { type: "application/javascript" });
+      const testWorker = new Worker(URL.createObjectURL(blob), {
+        type: "module",
+      });
 
       const timeout = setTimeout(() => {
         testWorker.terminate();
-        console.warn('Worker test timed out, using main thread fallback');
+        console.warn("Worker test timed out, using main thread fallback");
         workersSupported = false;
         resolve(false);
       }, 5000);
@@ -150,7 +152,7 @@ async function checkWorkerSupport(): Promise<boolean> {
         testWorker.terminate();
         workersSupported = e.data.success === true;
         if (!workersSupported) {
-          console.warn('Worker hash-wasm test failed:', e.data.error);
+          console.warn("Worker hash-wasm test failed:", e.data.error);
         }
         resolve(workersSupported);
       };
@@ -158,12 +160,12 @@ async function checkWorkerSupport(): Promise<boolean> {
       testWorker.onerror = (err) => {
         clearTimeout(timeout);
         testWorker.terminate();
-        console.warn('Worker creation failed:', err);
+        console.warn("Worker creation failed:", err);
         workersSupported = false;
         resolve(false);
       };
     } catch (err) {
-      console.warn('Worker support check failed:', err);
+      console.warn("Worker support check failed:", err);
       workersSupported = false;
       resolve(false);
     }
@@ -186,8 +188,8 @@ async function initWorkerPool(): Promise<void> {
   for (let i = 0; i < workerCount; i++) {
     try {
       const worker = new Worker(
-        new URL('../workers/hashWorker.ts', import.meta.url),
-        { type: 'module' }
+        new URL("../workers/hashWorker.ts", import.meta.url),
+        { type: "module" },
       );
 
       workerPool.push({
@@ -234,7 +236,7 @@ export function terminateWorkerPool(): void {
  */
 async function hashFileMainThread(
   file: File,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
   const hasher = await createSHA256();
   hasher.init();
@@ -246,7 +248,7 @@ async function hashFileMainThread(
     while (true) {
       // Check for cancellation
       if (signal?.aborted) {
-        throw new DOMException('Aborted', 'AbortError');
+        throw new DOMException("Aborted", "AbortError");
       }
 
       const { done, value } = await reader.read();
@@ -258,7 +260,7 @@ async function hashFileMainThread(
   }
 
   // Return base64url encoded hash (matches ar.io gateway X-AR-IO-DIGEST format)
-  const hashBytes = hasher.digest('binary');
+  const hashBytes = hasher.digest("binary");
   return toBase64Url(new Uint8Array(hashBytes));
 }
 
@@ -274,7 +276,7 @@ function hashFileWithWorker(
   file: File,
   path: string,
   timeoutMs: number,
-  signal?: AbortSignal
+  signal?: AbortSignal,
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const id = `${path}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
@@ -292,12 +294,12 @@ function hashFileWithWorker(
 
       if (response.id !== id) return; // Not our message
 
-      if (response.type === 'result') {
+      if (response.type === "result") {
         cleanup();
         resolve(response.hash!);
-      } else if (response.type === 'error') {
+      } else if (response.type === "error") {
         cleanup();
-        reject(new Error(response.error || 'Worker hash failed'));
+        reject(new Error(response.error || "Worker hash failed"));
       }
       // Ignore progress messages for now
     };
@@ -314,16 +316,20 @@ function hashFileWithWorker(
       pooledWorker.currentId = null;
       clearTimeout(timeoutHandle);
       // Remove specific listeners instead of nulling handlers
-      pooledWorker.worker.removeEventListener('message', messageHandler);
-      pooledWorker.worker.removeEventListener('error', errorHandler);
+      pooledWorker.worker.removeEventListener("message", messageHandler);
+      pooledWorker.worker.removeEventListener("error", errorHandler);
     };
 
     // Handle abort signal
     if (signal) {
-      signal.addEventListener('abort', () => {
-        cleanup();
-        reject(new DOMException('Aborted', 'AbortError'));
-      }, { once: true });
+      signal.addEventListener(
+        "abort",
+        () => {
+          cleanup();
+          reject(new DOMException("Aborted", "AbortError"));
+        },
+        { once: true },
+      );
     }
 
     // Set timeout
@@ -333,11 +339,11 @@ function hashFileWithWorker(
     }, timeoutMs);
 
     // Add event listeners (allows multiple concurrent listeners if needed)
-    pooledWorker.worker.addEventListener('message', messageHandler);
-    pooledWorker.worker.addEventListener('error', errorHandler);
+    pooledWorker.worker.addEventListener("message", messageHandler);
+    pooledWorker.worker.addEventListener("error", errorHandler);
 
     // Send hash request
-    const request: WorkerRequest = { type: 'hash', id, file, path };
+    const request: WorkerRequest = { type: "hash", id, file, path };
     pooledWorker.worker.postMessage(request);
   });
 }
@@ -360,7 +366,7 @@ interface QueueItem {
 async function processQueue(
   queue: QueueItem[],
   options: HashOptions,
-  useWorkers: boolean
+  useWorkers: boolean,
 ): Promise<void> {
   const { signal, onProgress, maxRetries = DEFAULT_MAX_RETRIES } = options;
 
@@ -380,13 +386,22 @@ async function processQueue(
   };
 
   // Process a single item with a specific worker (or main thread)
-  const processItem = async (item: QueueItem, worker: PooledWorker | null): Promise<void> => {
+  const processItem = async (
+    item: QueueItem,
+    worker: PooledWorker | null,
+  ): Promise<void> => {
     try {
       let hash: string;
       const timeout = Math.max(30000, (item.size / (5 * 1024 * 1024)) * 1000);
 
       if (worker) {
-        hash = await hashFileWithWorker(worker, item.file, item.path, timeout, signal);
+        hash = await hashFileWithWorker(
+          worker,
+          item.file,
+          item.path,
+          timeout,
+          signal,
+        );
       } else {
         hash = await hashFileMainThread(item.file, signal);
       }
@@ -395,21 +410,27 @@ async function processQueue(
       completedSuccessfully++;
     } catch (error) {
       // Handle abort
-      if (error instanceof DOMException && error.name === 'AbortError') {
-        item.resolve({ hash: null, error: 'Cancelled' });
+      if (error instanceof DOMException && error.name === "AbortError") {
+        item.resolve({ hash: null, error: "Cancelled" });
         completedSuccessfully++; // Count as "done" for progress
         return;
       }
 
       // Retry logic
       if (item.retries < maxRetries) {
-        console.warn(`Retrying hash for ${item.path} (attempt ${item.retries + 1})`);
+        console.warn(
+          `Retrying hash for ${item.path} (attempt ${item.retries + 1})`,
+        );
         item.retries++;
         queue.unshift(item); // Re-add to front of queue for quick retry
         // Don't increment completedSuccessfully - this item isn't done yet
       } else {
-        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-        console.warn(`Failed to hash ${item.path} after ${maxRetries} retries:`, errorMsg);
+        const errorMsg =
+          error instanceof Error ? error.message : "Unknown error";
+        console.warn(
+          `Failed to hash ${item.path} after ${maxRetries} retries:`,
+          errorMsg,
+        );
         item.resolve({ hash: null, error: errorMsg });
         completedSuccessfully++; // Count as "done" even though it failed
       }
@@ -433,7 +454,7 @@ async function processQueue(
         // Resolve all remaining items as cancelled
         while (queue.length > 0) {
           const item = queue.shift()!;
-          item.resolve({ hash: null, error: 'Cancelled' });
+          item.resolve({ hash: null, error: "Cancelled" });
           completedSuccessfully++;
         }
         // Wait for active items to finish (they'll also be cancelled via signal)
@@ -509,7 +530,7 @@ async function processQueue(
  */
 export async function hashFilesAsync(
   files: File[],
-  options: HashOptions = {}
+  options: HashOptions = {},
 ): Promise<HashResult> {
   const { signal, useWorkers = true } = options;
 
@@ -538,17 +559,25 @@ export async function hashFilesAsync(
       await initWorkerPool();
       workersAvailable = workerPool.length > 0;
     } catch (err) {
-      console.warn('Failed to initialize worker pool:', err);
+      console.warn("Failed to initialize worker pool:", err);
     }
   }
 
   // Create queue items
   const queue: QueueItem[] = [];
-  const resultPromises: Promise<{ path: string; hash: string | null; error?: string }>[] = [];
+  const resultPromises: Promise<{
+    path: string;
+    hash: string | null;
+    error?: string;
+  }>[] = [];
 
   files.forEach((file) => {
     const path = file.webkitRelativePath || file.name;
-    const promise = new Promise<{ path: string; hash: string | null; error?: string }>((resolve) => {
+    const promise = new Promise<{
+      path: string;
+      hash: string | null;
+      error?: string;
+    }>((resolve) => {
       queue.push({
         file,
         path,
@@ -571,7 +600,7 @@ export async function hashFilesAsync(
   let cancelled = false;
 
   allResults.forEach(({ path, hash, error }) => {
-    if (error === 'Cancelled') {
+    if (error === "Cancelled") {
       cancelled = true;
     } else if (hash) {
       results.set(path, hash);
@@ -590,7 +619,7 @@ export async function hashFilesAsync(
 export async function hashFiles(
   files: File[],
   _concurrency?: number,
-  onProgress?: (completed: number, total: number) => void
+  onProgress?: (completed: number, total: number) => void,
 ): Promise<Map<string, string>> {
   const result = await hashFilesAsync(files, {
     onProgress: onProgress
@@ -600,7 +629,10 @@ export async function hashFiles(
 
   // Log any errors
   if (result.errors.size > 0) {
-    console.warn(`Hashing completed with ${result.errors.size} errors:`, Object.fromEntries(result.errors));
+    console.warn(
+      `Hashing completed with ${result.errors.size} errors:`,
+      Object.fromEntries(result.errors),
+    );
   }
 
   return result.results;
@@ -618,9 +650,10 @@ export async function hashFile(file: File): Promise<string> {
  */
 export async function hashFileWithTimeout(
   file: File,
-  timeoutMs?: number
+  timeoutMs?: number,
 ): Promise<string | null> {
-  const timeout = timeoutMs ?? Math.max(30000, (file.size / (5 * 1024 * 1024)) * 1000);
+  const timeout =
+    timeoutMs ?? Math.max(30000, (file.size / (5 * 1024 * 1024)) * 1000);
 
   try {
     const controller = new AbortController();
@@ -630,7 +663,7 @@ export async function hashFileWithTimeout(
     clearTimeout(timeoutId);
     return hash;
   } catch (error) {
-    if (error instanceof DOMException && error.name === 'AbortError') {
+    if (error instanceof DOMException && error.name === "AbortError") {
       console.warn(`Timeout hashing ${file.name}`);
       return null;
     }

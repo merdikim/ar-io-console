@@ -3,7 +3,7 @@
  * Supports Arweave, Ethereum, and Solana address formats
  */
 
-export type WalletAddressType = 'arweave' | 'ethereum' | 'solana' | 'unknown';
+export type WalletAddressType = "arweave" | "ethereum" | "solana" | "unknown";
 
 export interface AddressValidationResult {
   isValid: boolean;
@@ -16,9 +16,11 @@ export interface AddressValidationResult {
  * @param address - The wallet address to validate
  * @returns Validation result with type and any error message
  */
-export function validateWalletAddress(address: string): AddressValidationResult {
-  if (!address || address.trim() === '') {
-    return { isValid: false, type: 'unknown', error: 'Address is required' };
+export function validateWalletAddress(
+  address: string,
+): AddressValidationResult {
+  if (!address || address.trim() === "") {
+    return { isValid: false, type: "unknown", error: "Address is required" };
   }
 
   const trimmedAddress = address.trim();
@@ -26,25 +28,26 @@ export function validateWalletAddress(address: string): AddressValidationResult 
   // Arweave: 43 characters, base64url (alphanumeric, underscore, hyphen)
   const arweaveRegex = /^[a-zA-Z0-9_-]{43}$/;
   if (arweaveRegex.test(trimmedAddress)) {
-    return { isValid: true, type: 'arweave' };
+    return { isValid: true, type: "arweave" };
   }
 
   // Ethereum: 42 characters starting with 0x, followed by 40 hex characters
   const ethereumRegex = /^0x[a-fA-F0-9]{40}$/;
   if (ethereumRegex.test(trimmedAddress)) {
-    return { isValid: true, type: 'ethereum' };
+    return { isValid: true, type: "ethereum" };
   }
 
   // Solana: 32-44 characters, base58 (no 0, O, I, l to avoid confusion)
   const solanaRegex = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
   if (solanaRegex.test(trimmedAddress)) {
-    return { isValid: true, type: 'solana' };
+    return { isValid: true, type: "solana" };
   }
 
   return {
     isValid: false,
-    type: 'unknown',
-    error: 'Invalid address format. Must be a valid Arweave (43 chars), Ethereum (0x + 40 hex), or Solana (32-44 base58) address.'
+    type: "unknown",
+    error:
+      "Invalid address format. Must be a valid Arweave (43 chars), Ethereum (0x + 40 hex), or Solana (32-44 base58) address.",
   };
 }
 
@@ -55,10 +58,14 @@ export function validateWalletAddress(address: string): AddressValidationResult 
  */
 export function getWalletTypeLabel(type: WalletAddressType): string {
   switch (type) {
-    case 'arweave': return 'Arweave';
-    case 'ethereum': return 'Ethereum';
-    case 'solana': return 'Solana';
-    default: return 'Unknown';
+    case "arweave":
+      return "Arweave";
+    case "ethereum":
+      return "Ethereum";
+    case "solana":
+      return "Solana";
+    default:
+      return "Unknown";
   }
 }
 
@@ -68,7 +75,10 @@ export function getWalletTypeLabel(type: WalletAddressType): string {
  * @param chars - Number of characters to show on each side (default: 6)
  * @returns Formatted address like "abc123...xyz789"
  */
-export function formatWalletAddress(address: string, chars: number = 6): string {
+export function formatWalletAddress(
+  address: string,
+  chars: number = 6,
+): string {
   if (!address || address.length <= chars * 2) return address;
   return `${address.slice(0, chars)}...${address.slice(-chars)}`;
 }
@@ -84,7 +94,10 @@ export function formatWalletAddress(address: string, chars: number = 6): string 
  */
 export async function resolveEthereumAddress(
   address: string,
-  getTurboBalanceFn: (address: string, tokenType: string) => Promise<{ winc: string | number }>
+  getTurboBalanceFn: (
+    address: string,
+    tokenType: string,
+  ) => Promise<{ winc: string | number }>,
 ): Promise<string> {
   // Only apply to Ethereum addresses
   const ethereumRegex = /^0x[a-fA-F0-9]{40}$/;
@@ -101,7 +114,7 @@ export async function resolveEthereumAddress(
 
   try {
     // Check balance with the provided address (checksummed/mixed case)
-    const checksummedBalance = await getTurboBalanceFn(address, 'ethereum');
+    const checksummedBalance = await getTurboBalanceFn(address, "ethereum");
     const checksummedWinc = Number(checksummedBalance.winc);
 
     // If checksummed address has credits, use it
@@ -110,19 +123,27 @@ export async function resolveEthereumAddress(
     }
 
     // Check balance with lowercase version
-    const lowercaseBalance = await getTurboBalanceFn(lowercaseAddress, 'ethereum');
+    const lowercaseBalance = await getTurboBalanceFn(
+      lowercaseAddress,
+      "ethereum",
+    );
     const lowercaseWinc = Number(lowercaseBalance.winc);
 
     // If lowercase has credits, use lowercase
     if (lowercaseWinc > 0) {
-      console.log(`[Address Resolution] Found credits in lowercase format. Using ${lowercaseAddress} instead of ${address}`);
+      console.log(
+        `[Address Resolution] Found credits in lowercase format. Using ${lowercaseAddress} instead of ${address}`,
+      );
       return lowercaseAddress;
     }
 
     // Neither has credits, return original
     return address;
   } catch (error) {
-    console.error('[Address Resolution] Error resolving Ethereum address:', error);
+    console.error(
+      "[Address Resolution] Error resolving Ethereum address:",
+      error,
+    );
     // On error, return the original address
     return address;
   }

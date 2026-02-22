@@ -1,20 +1,20 @@
-import { TurboWincForFiatResponse, USD } from '@ardrive/turbo-sdk/web';
-import { useStripe } from '@stripe/react-stripe-js';
-import { useCallback, useEffect, useState } from 'react';
-import { RefreshCw, CheckCircle, Users } from 'lucide-react';
-import { useStore } from '../../../store/useStore';
-import { getWincForFiat } from '../../../services/paymentService';
-import { useWincForOneGiB } from '../../../hooks/useWincForOneGiB';
-import { wincPerCredit } from '../../../constants';
-import { getWalletTypeLabel } from '../../../utils/addressValidation';
-import CopyButton from '../../CopyButton';
+import { TurboWincForFiatResponse, USD } from "@ardrive/turbo-sdk/web";
+import { useStripe } from "@stripe/react-stripe-js";
+import { useCallback, useEffect, useState } from "react";
+import { RefreshCw, CheckCircle, Users } from "lucide-react";
+import { useStore } from "../../../store/useStore";
+import { getWincForFiat } from "../../../services/paymentService";
+import { useWincForOneGiB } from "../../../hooks/useWincForOneGiB";
+import { wincPerCredit } from "../../../constants";
+import { getWalletTypeLabel } from "../../../utils/addressValidation";
+import CopyButton from "../../CopyButton";
 
 interface PaymentConfirmationPanelProps {
   usdAmount: number;
   onBack: () => void;
   onSuccess: () => void;
   targetAddress: string; // NEW - address receiving credits
-  targetWalletType: 'arweave' | 'ethereum' | 'solana'; // NEW - type of target wallet
+  targetWalletType: "arweave" | "ethereum" | "solana"; // NEW - type of target wallet
 }
 
 const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
@@ -22,7 +22,7 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
   onBack,
   onSuccess,
   targetAddress,
-  targetWalletType
+  targetWalletType,
 }) => {
   const stripe = useStripe();
   const wincForOneGiB = useWincForOneGiB();
@@ -31,18 +31,19 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
     paymentIntent,
     paymentInformation,
     promoCode,
-    setPaymentIntentResult
+    setPaymentIntentResult,
   } = useStore();
 
-  const [estimatedCredits, setEstimatedCredits] = useState<TurboWincForFiatResponse>();
+  const [estimatedCredits, setEstimatedCredits] =
+    useState<TurboWincForFiatResponse>();
   const [countdown, setCountdown] = useState<number>(5 * 60);
-  const [paymentError, setPaymentError] = useState<string>('');
+  const [paymentError, setPaymentError] = useState<string>("");
   const [sendingPayment, setSendingPayment] = useState<boolean>(false);
 
   const formatCountdown = (countdown: number) => {
     const minutes = Math.floor(countdown / 60);
     const seconds = countdown % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const updateEstimatedCredits = useCallback(async () => {
@@ -86,7 +87,7 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
     }
 
     setSendingPayment(true);
-    setPaymentError('');
+    setPaymentError("");
 
     try {
       const result = await stripe.confirmCardPayment(
@@ -99,15 +100,15 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
 
       if (result.error) {
         console.error(result.error.message);
-        setPaymentError(result.error.message || 'Payment failed');
+        setPaymentError(result.error.message || "Payment failed");
       } else {
         setPaymentIntentResult(result);
         // Trigger balance refresh
-        window.dispatchEvent(new CustomEvent('refresh-balance'));
+        window.dispatchEvent(new CustomEvent("refresh-balance"));
         onSuccess();
       }
     } catch {
-      setPaymentError('Payment processing failed. Please try again.');
+      setPaymentError("Payment processing failed. Please try again.");
     } finally {
       setSendingPayment(false);
     }
@@ -119,7 +120,7 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
   const originalAmount = usdAmount;
 
   const credits = estimatedCredits
-    ? ((Number(estimatedCredits.winc) || 0) / wincPerCredit)
+    ? (Number(estimatedCredits.winc) || 0) / wincPerCredit
     : 0;
 
   // Smart storage display - show in appropriate units
@@ -133,13 +134,14 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
       const kibibytes = gigabytes * 1024 * 1024;
       return `${kibibytes.toFixed(0)} KiB`;
     } else {
-      return '0 storage';
+      return "0 storage";
     }
   };
 
-  const storageAmount = estimatedCredits && wincForOneGiB
-    ? (Number(estimatedCredits.winc) / Number(wincForOneGiB))
-    : 0;
+  const storageAmount =
+    estimatedCredits && wincForOneGiB
+      ? Number(estimatedCredits.winc) / Number(wincForOneGiB)
+      : 0;
 
   return (
     <div className="px-4 sm:px-6">
@@ -149,20 +151,25 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
           <CheckCircle className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">Review Payment</h3>
-          <p className="text-sm text-foreground/80">Confirm your credit card payment details</p>
+          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">
+            Review Payment
+          </h3>
+          <p className="text-sm text-foreground/80">
+            Confirm your credit card payment details
+          </p>
         </div>
       </div>
 
       {/* Main Content Container with Gradient */}
       <div className="bg-card rounded-2xl border border-border/20 p-4 sm:p-6 mb-4 sm:mb-6">
-
         {/* Show recipient info if funding another wallet */}
         {targetAddress && targetAddress !== address && (
           <div className="mb-6 bg-info/10 border border-info/20 rounded-2xl p-4">
             <div className="flex items-center gap-2 text-info mb-2">
               <Users className="w-4 h-4" />
-              <span className="font-medium text-sm">Credits will be delivered to:</span>
+              <span className="font-medium text-sm">
+                Credits will be delivered to:
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <code className="text-sm text-info font-mono break-all flex-1 p-2 bg-card/50 rounded">
@@ -201,7 +208,9 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
                   </div>
                   <div className="flex justify-between py-2 text-sm text-success border-t border-border/20">
                     <div>Discount:</div>
-                    <div>-${(originalAmount - actualPaymentAmount).toFixed(2)}</div>
+                    <div>
+                      -${(originalAmount - actualPaymentAmount).toFixed(2)}
+                    </div>
                   </div>
                 </>
               )}
@@ -223,8 +232,10 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
         {/* Quote Refresh */}
         <div className="flex justify-between items-center bg-card px-6 py-3 text-center text-sm text-foreground/80 rounded-2xl mb-6">
           <div>
-            Quote Updates in{' '}
-            <span className="text-foreground">{formatCountdown(countdown)}</span>
+            Quote Updates in{" "}
+            <span className="text-foreground">
+              {formatCountdown(countdown)}
+            </span>
           </div>
           <button
             className="flex items-center gap-1 text-foreground hover:text-foreground/80 transition-colors"
@@ -240,7 +251,7 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
         {/* Terms of Service Message */}
         <div className="text-center bg-card/30 rounded-2xl p-4 mb-6">
           <p className="text-xs text-foreground/80">
-            By continuing, you agree to our{' '}
+            By continuing, you agree to our{" "}
             <a
               href="https://ardrive.io/tos-and-privacy/"
               target="_blank"
@@ -279,7 +290,7 @@ const PaymentConfirmationPanel: React.FC<PaymentConfirmationPanelProps> = ({
                 Processing...
               </>
             ) : (
-              'Complete Payment'
+              "Complete Payment"
             )}
           </button>
         </div>

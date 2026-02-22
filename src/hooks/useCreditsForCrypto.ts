@@ -26,8 +26,10 @@ export function useCreditsForCrypto(
       ...turboConfig,
       token: tokenType as any,
     })
-      .getWincForToken({ 
-        tokenAmount: tokenToBaseMap[tokenType as keyof typeof tokenToBaseMap](debouncedCryptoAmount),
+      .getWincForToken({
+        tokenAmount: tokenToBaseMap[tokenType as keyof typeof tokenToBaseMap](
+          debouncedCryptoAmount,
+        ),
       })
       .then(({ winc }) => {
         cryptoWhenCreditsWereLastUpdatedRef.current = debouncedCryptoAmount;
@@ -35,7 +37,9 @@ export function useCreditsForCrypto(
       })
       .catch((err) => {
         console.error(err);
-        errorCallback(`Error getting credits for ${tokenType} amount: ${err.message}`);
+        errorCallback(
+          `Error getting credits for ${tokenType} amount: ${err.message}`,
+        );
       });
   }, [debouncedCryptoAmount, tokenType, errorCallback, turboConfig]);
 

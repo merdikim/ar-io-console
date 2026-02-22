@@ -1,4 +1,4 @@
-import { Connection } from '@solana/web3.js';
+import { Connection } from "@solana/web3.js";
 
 /**
  * Singleton connection cache for Solana RPC endpoints
@@ -15,7 +15,7 @@ const connectionCache: Map<string, Connection> = new Map();
  */
 export function getSolanaConnection(rpcUrl: string): Connection {
   if (!connectionCache.has(rpcUrl)) {
-    connectionCache.set(rpcUrl, new Connection(rpcUrl, 'confirmed'));
+    connectionCache.set(rpcUrl, new Connection(rpcUrl, "confirmed"));
   }
   return connectionCache.get(rpcUrl)!;
 }

@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
-import { useStore } from '../../store/useStore';
-import { getTurboBalance, wincToCredits } from '../../utils';
-import { useWincForOneGiB } from '../../hooks/useWincForOneGiB';
-import { useFreeUploadLimit, formatFreeLimit } from '../../hooks/useFreeUploadLimit';
-import Faq from '../Faq';
+import { useEffect, useState } from "react";
+import { useStore } from "../../store/useStore";
+import { getTurboBalance, wincToCredits } from "../../utils";
+import { useWincForOneGiB } from "../../hooks/useWincForOneGiB";
+import {
+  useFreeUploadLimit,
+  formatFreeLimit,
+} from "../../hooks/useFreeUploadLimit";
+import Faq from "../Faq";
 
 export default function InfoPanel() {
   const { address, walletType } = useStore();
@@ -24,15 +27,17 @@ export default function InfoPanel() {
       .finally(() => setLoading(false));
   }, [address, walletType]);
 
-  const estimatedStorage = wincForOneGiB 
-    ? (balance * 1_000_000_000_000) / Number(wincForOneGiB) 
+  const estimatedStorage = wincForOneGiB
+    ? (balance * 1_000_000_000_000) / Number(wincForOneGiB)
     : 0;
 
   return (
     <div className="p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-2">Your Account</h2>
-        <p className="text-foreground/80">Manage credits, upload files, and more</p>
+        <p className="text-foreground/80">
+          Manage credits, upload files, and more
+        </p>
       </div>
 
       {/* Balance Card */}
@@ -71,7 +76,9 @@ export default function InfoPanel() {
         <div className="bg-card rounded-2xl p-4">
           <div className="text-sm text-foreground/80 mb-1">Free Tier</div>
           <div className="font-semibold">
-            {freeUploadLimitBytes > 0 ? `Files under ${formatFreeLimit(freeUploadLimitBytes)}` : 'No free tier'}
+            {freeUploadLimitBytes > 0
+              ? `Files under ${formatFreeLimit(freeUploadLimitBytes)}`
+              : "No free tier"}
           </div>
         </div>
       </div>

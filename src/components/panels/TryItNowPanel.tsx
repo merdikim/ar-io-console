@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import {
   Upload,
   AlertCircle,
@@ -21,54 +21,115 @@ import {
   Copy,
   CheckCircle,
   Mail,
-} from 'lucide-react';
-import { Popover, PopoverButton, PopoverPanel } from '@headlessui/react';
-import { usePrivy, useLogin, useWallets, useCreateWallet } from '@privy-io/react-auth';
-import { useStore } from '../../store/useStore';
-import { useFileUpload } from '../../hooks/useFileUpload';
-import { useFreeUploadLimit, isFileFree, formatFreeLimit } from '../../hooks/useFreeUploadLimit';
-import { useUploadStatus } from '../../hooks/useUploadStatus';
-import { getArweaveUrl, resolveEthereumAddress, getTurboBalance } from '../../utils';
-import CopyButton from '../CopyButton';
-import ReceiptModal from '../modals/ReceiptModal';
+} from "lucide-react";
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
+import {
+  usePrivy,
+  useLogin,
+  useWallets,
+  useCreateWallet,
+} from "@privy-io/react-auth";
+import { useStore } from "../../store/useStore";
+import { useFileUpload } from "../../hooks/useFileUpload";
+import {
+  useFreeUploadLimit,
+  isFileFree,
+  formatFreeLimit,
+} from "../../hooks/useFreeUploadLimit";
+import { useUploadStatus } from "../../hooks/useUploadStatus";
+import {
+  getArweaveUrl,
+  resolveEthereumAddress,
+  getTurboBalance,
+} from "../../utils";
+import CopyButton from "../CopyButton";
+import ReceiptModal from "../modals/ReceiptModal";
 
 // Get appropriate icon for file type (returns component class)
 function getFileIconClass(type: string) {
-  if (type.startsWith('image/')) return FileImage;
-  if (type.startsWith('video/')) return FileVideo;
-  if (type.startsWith('audio/')) return FileAudio;
-  if (type.startsWith('text/') || type.includes('document') || type.includes('pdf')) return FileText;
+  if (type.startsWith("image/")) return FileImage;
+  if (type.startsWith("video/")) return FileVideo;
+  if (type.startsWith("audio/")) return FileAudio;
+  if (
+    type.startsWith("text/") ||
+    type.includes("document") ||
+    type.includes("pdf")
+  )
+    return FileText;
   return File;
 }
 
 // Get contextual file icon JSX based on content type or file name
 const getFileIcon = (contentType?: string, fileName?: string) => {
-  const type = contentType?.toLowerCase() || '';
-  const ext = fileName?.split('.').pop()?.toLowerCase() || '';
+  const type = contentType?.toLowerCase() || "";
+  const ext = fileName?.split(".").pop()?.toLowerCase() || "";
 
   // Images
-  if (type.startsWith('image/') || ['png', 'jpg', 'jpeg', 'gif', 'svg', 'webp', 'ico', 'bmp'].includes(ext)) {
+  if (
+    type.startsWith("image/") ||
+    ["png", "jpg", "jpeg", "gif", "svg", "webp", "ico", "bmp"].includes(ext)
+  ) {
     return <FileImage className="w-4 h-4 text-foreground/80 flex-shrink-0" />;
   }
 
   // Videos
-  if (type.startsWith('video/') || ['mp4', 'webm', 'mov', 'avi', 'mkv'].includes(ext)) {
+  if (
+    type.startsWith("video/") ||
+    ["mp4", "webm", "mov", "avi", "mkv"].includes(ext)
+  ) {
     return <FileVideo className="w-4 h-4 text-foreground/80 flex-shrink-0" />;
   }
 
   // Audio
-  if (type.startsWith('audio/') || ['mp3', 'wav', 'ogg', 'flac', 'aac', 'm4a'].includes(ext)) {
+  if (
+    type.startsWith("audio/") ||
+    ["mp3", "wav", "ogg", "flac", "aac", "m4a"].includes(ext)
+  ) {
     return <FileAudio className="w-4 h-4 text-foreground/80 flex-shrink-0" />;
   }
 
   // Code files
-  if (['application/javascript', 'application/json', 'text/css', 'text/html', 'application/xml', 'text/xml'].includes(type) ||
-      ['js', 'ts', 'jsx', 'tsx', 'css', 'html', 'json', 'xml', 'py', 'rb', 'go', 'rs', 'java', 'c', 'cpp', 'h', 'sh', 'yml', 'yaml', 'toml', 'md'].includes(ext)) {
+  if (
+    [
+      "application/javascript",
+      "application/json",
+      "text/css",
+      "text/html",
+      "application/xml",
+      "text/xml",
+    ].includes(type) ||
+    [
+      "js",
+      "ts",
+      "jsx",
+      "tsx",
+      "css",
+      "html",
+      "json",
+      "xml",
+      "py",
+      "rb",
+      "go",
+      "rs",
+      "java",
+      "c",
+      "cpp",
+      "h",
+      "sh",
+      "yml",
+      "yaml",
+      "toml",
+      "md",
+    ].includes(ext)
+  ) {
     return <Code className="w-4 h-4 text-foreground/80 flex-shrink-0" />;
   }
 
   // Text/Documents
-  if (type.startsWith('text/') || ['txt', 'pdf', 'doc', 'docx', 'rtf'].includes(ext)) {
+  if (
+    type.startsWith("text/") ||
+    ["txt", "pdf", "doc", "docx", "rtf"].includes(ext)
+  ) {
     return <FileText className="w-4 h-4 text-foreground/80 flex-shrink-0" />;
   }
 
@@ -80,7 +141,13 @@ export default function TryItNowPanel() {
   const { address, uploadHistory, addUploadResults, setAddress } = useStore();
   const freeLimit = useFreeUploadLimit();
   const { uploadFile } = useFileUpload();
-  const { uploadStatuses, getStatusIcon, checkUploadStatus, statusChecking, formatFileSize } = useUploadStatus();
+  const {
+    uploadStatuses,
+    getStatusIcon,
+    checkUploadStatus,
+    statusChecking,
+    formatFileSize,
+  } = useUploadStatus();
 
   // Privy hooks
   usePrivy(); // Initialize Privy
@@ -96,7 +163,11 @@ export default function TryItNowPanel() {
   const [showReceiptModal, setShowReceiptModal] = useState<string | null>(null);
   const [showAllUploads, setShowAllUploads] = useState(false);
   const [copiedItems, setCopiedItems] = useState<Set<string>>(new Set());
-  const [lastUploadedFile, setLastUploadedFile] = useState<{ id: string; fileName: string; dataCaches?: string[] } | null>(null);
+  const [lastUploadedFile, setLastUploadedFile] = useState<{
+    id: string;
+    fileName: string;
+    dataCaches?: string[];
+  } | null>(null);
   const [waitingForWallet, setWaitingForWallet] = useState(false);
   const [loginInProgress, setLoginInProgress] = useState(false);
 
@@ -106,12 +177,15 @@ export default function TryItNowPanel() {
   // Helper function to resolve and set Ethereum address
   const setEthereumAddress = async (rawAddress: string) => {
     try {
-      const resolvedAddress = await resolveEthereumAddress(rawAddress, getTurboBalance);
-      setAddress(resolvedAddress, 'ethereum');
+      const resolvedAddress = await resolveEthereumAddress(
+        rawAddress,
+        getTurboBalance,
+      );
+      setAddress(resolvedAddress, "ethereum");
       return resolvedAddress;
     } catch (error) {
-      console.error('[TryItNow] Error resolving Ethereum address:', error);
-      setAddress(rawAddress, 'ethereum');
+      console.error("[TryItNow] Error resolving Ethereum address:", error);
+      setAddress(rawAddress, "ethereum");
       return rawAddress;
     }
   };
@@ -123,7 +197,7 @@ export default function TryItNowPanel() {
 
       // Check if user already has a wallet
       const existingWallet = user?.linkedAccounts?.find(
-        account => account.type === 'wallet'
+        (account) => account.type === "wallet",
       );
 
       if (existingWallet) {
@@ -138,34 +212,35 @@ export default function TryItNowPanel() {
             setWaitingForWallet(false);
           } else {
             // createWallet returned null/undefined without throwing
-            console.error('[TryItNow] createWallet returned falsy value');
+            console.error("[TryItNow] createWallet returned falsy value");
             setWaitingForWallet(false);
-            setError('Failed to create wallet. Please try again.');
+            setError("Failed to create wallet. Please try again.");
             pendingUploadRef.current = false;
           }
         } catch (err) {
-          console.error('[TryItNow] Failed to create wallet:', err);
+          console.error("[TryItNow] Failed to create wallet:", err);
           setWaitingForWallet(false);
-          setError('Failed to create wallet. Please try again.');
+          setError("Failed to create wallet. Please try again.");
           pendingUploadRef.current = false;
         }
       }
     },
     onError: (error) => {
-      console.error('[TryItNow] Login error:', error);
+      console.error("[TryItNow] Login error:", error);
       setLoginInProgress(false);
-      setError('Login failed. Please try again.');
+      setError("Login failed. Please try again.");
       pendingUploadRef.current = false;
-    }
+    },
   });
 
   // Watch for wallet to become available after login
   useEffect(() => {
     if (waitingForWallet && privyWallets && privyWallets.length > 0) {
-      const privyWallet = privyWallets.find(w =>
-        w.walletClientType === 'privy' ||
-        w.walletClientType === 'embedded' ||
-        !w.imported
+      const privyWallet = privyWallets.find(
+        (w) =>
+          w.walletClientType === "privy" ||
+          w.walletClientType === "embedded" ||
+          !w.imported,
       );
 
       if (privyWallet) {
@@ -178,7 +253,7 @@ export default function TryItNowPanel() {
 
   // Check if file is previewable (image)
   const isPreviewable = useMemo(() => {
-    return selectedFile?.type.startsWith('image/') ?? false;
+    return selectedFile?.type.startsWith("image/") ?? false;
   }, [selectedFile]);
 
   const handleFileSelect = useCallback(
@@ -195,7 +270,7 @@ export default function TryItNowPanel() {
       // Validate file size against free limit
       if (!isFileFree(file.size, freeLimit)) {
         setError(
-          `File too large. Free uploads are limited to ${formatFreeLimit(freeLimit)}. Try a smaller file.`
+          `File too large. Free uploads are limited to ${formatFreeLimit(freeLimit)}. Try a smaller file.`,
         );
         return;
       }
@@ -203,11 +278,11 @@ export default function TryItNowPanel() {
       setSelectedFile(file);
 
       // Create preview URL for images
-      if (file.type.startsWith('image/')) {
+      if (file.type.startsWith("image/")) {
         setPreviewUrl(URL.createObjectURL(file));
       }
     },
-    [freeLimit, previewUrl]
+    [freeLimit, previewUrl],
   );
 
   const handleDrop = useCallback(
@@ -220,7 +295,7 @@ export default function TryItNowPanel() {
         handleFileSelect(file);
       }
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   const handleInputChange = useCallback(
@@ -230,7 +305,7 @@ export default function TryItNowPanel() {
         handleFileSelect(file);
       }
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   // The actual upload logic
@@ -252,7 +327,11 @@ export default function TryItNowPanel() {
           owner: address,
         };
         addUploadResults([resultWithCorrectOwner]);
-        setLastUploadedFile({ id: result.id, fileName, dataCaches: result.dataCaches });
+        setLastUploadedFile({
+          id: result.id,
+          fileName,
+          dataCaches: result.dataCaches,
+        });
         setSuccessMessage(`"${fileName}" uploaded successfully!`);
       }
 
@@ -264,9 +343,9 @@ export default function TryItNowPanel() {
       setSelectedFile(null);
 
       // Trigger balance refresh
-      window.dispatchEvent(new CustomEvent('refresh-balance'));
+      window.dispatchEvent(new CustomEvent("refresh-balance"));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed');
+      setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
       setIsUploading(false);
     }
@@ -274,7 +353,13 @@ export default function TryItNowPanel() {
 
   // Execute upload when address becomes available after login
   useEffect(() => {
-    if (pendingUploadRef.current && address && selectedFile && !isUploading && !waitingForWallet) {
+    if (
+      pendingUploadRef.current &&
+      address &&
+      selectedFile &&
+      !isUploading &&
+      !waitingForWallet
+    ) {
       pendingUploadRef.current = false;
       executeUpload();
     }
@@ -310,7 +395,7 @@ export default function TryItNowPanel() {
 
   // Filter upload history for this address
   const userUploads = uploadHistory.filter(
-    (u) => u.owner?.toLowerCase() === address?.toLowerCase()
+    (u) => u.owner?.toLowerCase() === address?.toLowerCase(),
   );
   const recentUploads = userUploads.slice(0, 5);
   const displayUploads = showAllUploads ? userUploads : recentUploads;
@@ -318,7 +403,11 @@ export default function TryItNowPanel() {
   const FileIcon = selectedFile ? getFileIconClass(selectedFile.type) : File;
 
   const isLoading = isUploading || loginInProgress || waitingForWallet;
-  const loadingText = loginInProgress ? 'Signing in...' : waitingForWallet ? 'Creating wallet...' : 'Uploading...';
+  const loadingText = loginInProgress
+    ? "Signing in..."
+    : waitingForWallet
+      ? "Creating wallet..."
+      : "Uploading...";
 
   return (
     <div className="px-4 sm:px-6">
@@ -328,9 +417,12 @@ export default function TryItNowPanel() {
           <Upload className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">Try It Out</h3>
+          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">
+            Try It Out
+          </h3>
           <p className="text-sm text-foreground/80">
-            Upload a file for free. It will be stored permanently and accessible to anyone with the link.
+            Upload a file for free. It will be stored permanently and accessible
+            to anyone with the link.
           </p>
         </div>
       </div>
@@ -341,21 +433,27 @@ export default function TryItNowPanel() {
           <InfinityIcon className="w-5 h-5 text-primary flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-foreground">Permanent</p>
-            <p className="text-xs text-foreground/80">Stored forever, can't be deleted</p>
+            <p className="text-xs text-foreground/80">
+              Stored forever, can't be deleted
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 p-3 bg-card rounded-2xl border border-border/20">
           <Globe className="w-5 h-5 text-primary flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-foreground">Public</p>
-            <p className="text-xs text-foreground/80">Anyone with the link can view</p>
+            <p className="text-xs text-foreground/80">
+              Anyone with the link can view
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 p-3 bg-card rounded-2xl border border-border/20">
           <Shield className="w-5 h-5 text-primary flex-shrink-0" />
           <div>
             <p className="text-sm font-medium text-foreground">Verifiable</p>
-            <p className="text-xs text-foreground/80">Tamper-proof and authentic</p>
+            <p className="text-xs text-foreground/80">
+              Tamper-proof and authentic
+            </p>
           </div>
         </div>
       </div>
@@ -373,8 +471,8 @@ export default function TryItNowPanel() {
               onDrop={handleDrop}
               className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all ${
                 dragOver
-                  ? 'border-primary bg-primary/10'
-                  : 'border-primary/30 hover:border-primary/50'
+                  ? "border-primary bg-primary/10"
+                  : "border-primary/30 hover:border-primary/50"
               }`}
             >
               <div className="mb-4">
@@ -383,7 +481,10 @@ export default function TryItNowPanel() {
                   Drop a file here or click to browse
                 </p>
                 <p className="text-sm text-foreground/80">
-                  Max file size: <span className="text-foreground font-medium">{formatFreeLimit(freeLimit)}</span>
+                  Max file size:{" "}
+                  <span className="text-foreground font-medium">
+                    {formatFreeLimit(freeLimit)}
+                  </span>
                 </p>
               </div>
               <input
@@ -400,89 +501,94 @@ export default function TryItNowPanel() {
               </label>
             </div>
           ) : (
-          <div className="space-y-4">
-            {/* File Preview / Info */}
-            <div className="bg-card rounded-2xl p-4">
-              <div className="flex items-start gap-4">
-                {/* Preview or Icon */}
-                <div className="flex-shrink-0">
-                  {isPreviewable && previewUrl ? (
-                    <div className="w-24 h-24 rounded-2xl overflow-hidden bg-card border border-border/20">
-                      <img
-                        src={previewUrl}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-16 h-16 rounded-2xl bg-card border border-border/20 flex items-center justify-center">
-                      <FileIcon className="w-8 h-8 text-foreground/80" />
-                    </div>
-                  )}
+            <div className="space-y-4">
+              {/* File Preview / Info */}
+              <div className="bg-card rounded-2xl p-4">
+                <div className="flex items-start gap-4">
+                  {/* Preview or Icon */}
+                  <div className="flex-shrink-0">
+                    {isPreviewable && previewUrl ? (
+                      <div className="w-24 h-24 rounded-2xl overflow-hidden bg-card border border-border/20">
+                        <img
+                          src={previewUrl}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-16 h-16 rounded-2xl bg-card border border-border/20 flex items-center justify-center">
+                        <FileIcon className="w-8 h-8 text-foreground/80" />
+                      </div>
+                    )}
+                  </div>
+
+                  {/* File Details */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground font-medium truncate mb-1">
+                      {selectedFile.name}
+                    </p>
+                    <p className="text-sm text-foreground/80 mb-1">
+                      {formatFileSize(selectedFile.size)}
+                    </p>
+                    <p className="text-xs text-foreground/70">
+                      {selectedFile.type || "Unknown type"}
+                    </p>
+                  </div>
+
+                  {/* Remove Button */}
+                  <button
+                    onClick={clearSelection}
+                    className="p-1.5 text-foreground/80 hover:text-foreground hover:bg-card rounded-full transition-colors"
+                    title="Remove file"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
-
-                {/* File Details */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-medium truncate mb-1">
-                    {selectedFile.name}
-                  </p>
-                  <p className="text-sm text-foreground/80 mb-1">{formatFileSize(selectedFile.size)}</p>
-                  <p className="text-xs text-foreground/70">{selectedFile.type || 'Unknown type'}</p>
-                </div>
-
-                {/* Remove Button */}
-                <button
-                  onClick={clearSelection}
-                  className="p-1.5 text-foreground/80 hover:text-foreground hover:bg-card rounded-full transition-colors"
-                  title="Remove file"
-                >
-                  <X className="w-5 h-5" />
-                </button>
               </div>
-            </div>
 
-            {/* Upload Button - Shows email sign-in hint if not logged in */}
-            <button
-              onClick={handleUpload}
-              disabled={isLoading}
-              className="w-full py-4 px-6 rounded-full bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              {isLoading ? (
-                <>
-                  <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
-                  {loadingText}
-                </>
-              ) : (
-                <>
-                  <Upload className="w-5 h-5" />
-                  Upload File
-                </>
-              )}
-            </button>
-
-            {/* Sign-in hint for non-authenticated users */}
-            {!address && !isLoading && (
-              <div className="flex items-center justify-center gap-2 text-sm text-foreground/80">
-                <Mail className="w-4 h-4" />
-                <span>You'll sign in with email to complete the upload</span>
-              </div>
-            )}
-
-            {/* Reminder about permanence and terms */}
-            <p className="text-xs text-center text-foreground/80">
-              Once uploaded, this file will be publicly accessible and cannot be removed.
-              By uploading, you agree to our{' '}
-              <a
-                href="https://ardrive.io/tos-and-privacy/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary hover:text-primary/80 transition-colors underline"
+              {/* Upload Button - Shows email sign-in hint if not logged in */}
+              <button
+                onClick={handleUpload}
+                disabled={isLoading}
+                className="w-full py-4 px-6 rounded-full bg-primary text-primary-foreground font-bold text-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Terms of Service
-              </a>.
-            </p>
-          </div>
-        )}
+                {isLoading ? (
+                  <>
+                    <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full" />
+                    {loadingText}
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-5 h-5" />
+                    Upload File
+                  </>
+                )}
+              </button>
+
+              {/* Sign-in hint for non-authenticated users */}
+              {!address && !isLoading && (
+                <div className="flex items-center justify-center gap-2 text-sm text-foreground/80">
+                  <Mail className="w-4 h-4" />
+                  <span>You'll sign in with email to complete the upload</span>
+                </div>
+              )}
+
+              {/* Reminder about permanence and terms */}
+              <p className="text-xs text-center text-foreground/80">
+                Once uploaded, this file will be publicly accessible and cannot
+                be removed. By uploading, you agree to our{" "}
+                <a
+                  href="https://ardrive.io/tos-and-privacy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-primary hover:text-primary/80 transition-colors underline"
+                >
+                  Terms of Service
+                </a>
+                .
+              </p>
+            </div>
+          )}
 
           {/* Success Message */}
           {successMessage && lastUploadedFile && (
@@ -492,7 +598,10 @@ export default function TryItNowPanel() {
                 <span className="font-medium">{successMessage}</span>
               </div>
               <a
-                href={getArweaveUrl(lastUploadedFile.id, lastUploadedFile.dataCaches)}
+                href={getArweaveUrl(
+                  lastUploadedFile.id,
+                  lastUploadedFile.dataCaches,
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2 bg-success text-white font-medium rounded-full hover:bg-success/90 transition-colors"
@@ -522,10 +631,13 @@ export default function TryItNowPanel() {
           <div className="w-12 h-12 bg-foreground/10 rounded-full flex items-center justify-center mx-auto mb-4">
             <Upload className="w-6 h-6 text-foreground/80" />
           </div>
-          <h4 className="text-lg font-semibold font-heading text-foreground mb-2">Free Uploads Not Available</h4>
+          <h4 className="text-lg font-semibold font-heading text-foreground mb-2">
+            Free Uploads Not Available
+          </h4>
           <p className="text-sm text-foreground/80 max-w-md mx-auto">
-            The current bundler doesn't support free uploads. Connect a wallet to purchase credits,
-            or try a different gateway that offers free uploads.
+            The current bundler doesn't support free uploads. Connect a wallet
+            to purchase credits, or try a different gateway that offers free
+            uploads.
           </p>
         </div>
       )}
@@ -544,7 +656,7 @@ export default function TryItNowPanel() {
                 onClick={() => setShowAllUploads(!showAllUploads)}
                 className="text-xs text-foreground/80 hover:text-foreground transition-colors"
               >
-                {showAllUploads ? 'Show Less' : 'Show All'}
+                {showAllUploads ? "Show Less" : "Show All"}
               </button>
             )}
           </div>
@@ -556,7 +668,10 @@ export default function TryItNowPanel() {
               const isChecking = statusChecking[upload.id];
 
               return (
-                <div key={index} className="bg-card border border-border/20 rounded-2xl p-4">
+                <div
+                  key={index}
+                  className="bg-card border border-border/20 rounded-2xl p-4"
+                >
                   <div className="space-y-2">
                     {/* Row 1: Transaction ID + Actions */}
                     <div className="flex items-center justify-between gap-2">
@@ -570,8 +685,13 @@ export default function TryItNowPanel() {
                       <div className="hidden sm:flex items-center gap-1">
                         {/* Status Icon */}
                         {status && (
-                          <div className="p-1.5" title={`Status: ${status.status}`}>
-                            <span className="text-xs">{getStatusIcon(status.status, status.info)}</span>
+                          <div
+                            className="p-1.5"
+                            title={`Status: ${status.status}`}
+                          >
+                            <span className="text-xs">
+                              {getStatusIcon(status.status, status.info)}
+                            </span>
                           </div>
                         )}
                         <CopyButton textToCopy={upload.id} />
@@ -588,7 +708,9 @@ export default function TryItNowPanel() {
                           className="p-1.5 text-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
                           title="Check Status"
                         >
-                          <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
+                          <RefreshCw
+                            className={`w-4 h-4 ${isChecking ? "animate-spin" : ""}`}
+                          />
                         </button>
                         <a
                           href={getArweaveUrl(upload.id, upload.dataCaches)}
@@ -604,8 +726,13 @@ export default function TryItNowPanel() {
                       {/* Mobile: Status icon + 3-dot menu */}
                       <div className="sm:hidden flex items-center gap-1">
                         {status && (
-                          <div className="p-1.5" title={`Status: ${status.status}`}>
-                            <span className="text-xs">{getStatusIcon(status.status, status.info)}</span>
+                          <div
+                            className="p-1.5"
+                            title={`Status: ${status.status}`}
+                          >
+                            <span className="text-xs">
+                              {getStatusIcon(status.status, status.info)}
+                            </span>
                           </div>
                         )}
                         <Popover className="relative">
@@ -621,11 +748,13 @@ export default function TryItNowPanel() {
                                 <button
                                   onClick={() => {
                                     navigator.clipboard.writeText(upload.id);
-                                    setCopiedItems(prev => new Set([...prev, upload.id]));
+                                    setCopiedItems(
+                                      (prev) => new Set([...prev, upload.id]),
+                                    );
                                     setTimeout(() => {
                                       close();
                                       setTimeout(() => {
-                                        setCopiedItems(prev => {
+                                        setCopiedItems((prev) => {
                                           const newSet = new Set(prev);
                                           newSet.delete(upload.id);
                                           return newSet;
@@ -665,11 +794,16 @@ export default function TryItNowPanel() {
                                   disabled={isChecking}
                                   className="w-full px-4 py-2 text-left text-sm text-foreground/80 hover:bg-card transition-colors flex items-center gap-2 disabled:opacity-50"
                                 >
-                                  <RefreshCw className={`w-4 h-4 ${isChecking ? 'animate-spin' : ''}`} />
+                                  <RefreshCw
+                                    className={`w-4 h-4 ${isChecking ? "animate-spin" : ""}`}
+                                  />
                                   Check Status
                                 </button>
                                 <a
-                                  href={getArweaveUrl(upload.id, upload.dataCaches)}
+                                  href={getArweaveUrl(
+                                    upload.id,
+                                    upload.dataCaches,
+                                  )}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   onClick={() => close()}
@@ -687,7 +821,10 @@ export default function TryItNowPanel() {
 
                     {/* Row 2: File Name */}
                     {upload.fileName && (
-                      <div className="text-sm text-foreground truncate flex items-center gap-2" title={upload.fileName}>
+                      <div
+                        className="text-sm text-foreground truncate flex items-center gap-2"
+                        title={upload.fileName}
+                      >
                         {getFileIcon(upload.contentType, upload.fileName)}
                         <span className="truncate">{upload.fileName}</span>
                       </div>
@@ -695,9 +832,13 @@ export default function TryItNowPanel() {
 
                     {/* Row 3: Content Type + File Size */}
                     <div className="flex items-center gap-2 text-sm text-foreground/80">
-                      <span>{upload.contentType || 'Unknown Type'}</span>
+                      <span>{upload.contentType || "Unknown Type"}</span>
                       <span>-</span>
-                      <span>{upload.fileSize ? formatFileSize(upload.fileSize) : 'Unknown Size'}</span>
+                      <span>
+                        {upload.fileSize
+                          ? formatFileSize(upload.fileSize)
+                          : "Unknown Size"}
+                      </span>
                     </div>
 
                     {/* Row 4: Timestamp */}
@@ -729,7 +870,10 @@ export default function TryItNowPanel() {
             <p className="text-sm font-medium text-foreground group-hover:text-foreground">
               What is the AR.IO Network?
             </p>
-            <p className="text-xs text-foreground/80">Learn about the permanent cloud - decentralized storage and hosting that lasts forever</p>
+            <p className="text-xs text-foreground/80">
+              Learn about the permanent cloud - decentralized storage and
+              hosting that lasts forever
+            </p>
           </div>
           <ArrowRight className="w-4 h-4 text-foreground/80 group-hover:text-foreground group-hover:translate-x-1 transition-all" />
         </a>
@@ -747,7 +891,10 @@ export default function TryItNowPanel() {
             <p className="text-sm font-medium text-foreground group-hover:text-foreground">
               Build with Turbo SDK
             </p>
-            <p className="text-xs text-foreground/80">Add permanent uploads to your app, or deploy and host it on the permaweb</p>
+            <p className="text-xs text-foreground/80">
+              Add permanent uploads to your app, or deploy and host it on the
+              permaweb
+            </p>
           </div>
           <ArrowRight className="w-4 h-4 text-foreground/80 group-hover:text-foreground group-hover:translate-x-1 transition-all" />
         </a>

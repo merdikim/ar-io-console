@@ -1,4 +1,4 @@
-import PricingCalculatorPanel from '../components/panels/PricingCalculatorPanel';
+import PricingCalculatorPanel from "../components/panels/PricingCalculatorPanel";
 
 export default function CalculatorPage() {
   return (

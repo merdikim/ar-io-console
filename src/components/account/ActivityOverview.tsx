@@ -1,7 +1,7 @@
-import { Upload, Zap, ArrowRight, ExternalLink } from 'lucide-react';
-import { useStore } from '../../store/useStore';
-import { getArweaveUrl } from '../../utils';
-import { useNavigate } from 'react-router-dom';
+import { Upload, Zap, ArrowRight, ExternalLink } from "lucide-react";
+import { useStore } from "../../store/useStore";
+import { getArweaveUrl } from "../../utils";
+import { useNavigate } from "react-router-dom";
 
 export default function ActivityOverview() {
   const { uploadHistory, deployHistory } = useStore();
@@ -9,16 +9,18 @@ export default function ActivityOverview() {
 
   // Helper to find ArNS association for a manifest
   const getArNSAssociation = (manifestId: string) => {
-    return deployHistory.find(record =>
-      record.type === 'arns-update' &&
-      record.manifestId === manifestId
+    return deployHistory.find(
+      (record) =>
+        record.type === "arns-update" && record.manifestId === manifestId,
     );
   };
 
   // Group deploy results by manifest ID (same as DeploySitePanel)
-  const deploymentGroups: { [manifestId: string]: { manifest?: any, files?: any } } = {};
+  const deploymentGroups: {
+    [manifestId: string]: { manifest?: any; files?: any };
+  } = {};
 
-  deployHistory.forEach(result => {
+  deployHistory.forEach((result) => {
     const manifestId = result.manifestId || result.id;
     if (!manifestId) return;
 
@@ -26,9 +28,9 @@ export default function ActivityOverview() {
       deploymentGroups[manifestId] = {};
     }
 
-    if (result.type === 'manifest') {
+    if (result.type === "manifest") {
       deploymentGroups[manifestId].manifest = result;
-    } else if (result.type === 'files') {
+    } else if (result.type === "files") {
       deploymentGroups[manifestId].files = result;
     }
   });
@@ -101,7 +103,7 @@ export default function ActivityOverview() {
         {uploadHistory.length > 0 && (
           <div className="px-4 py-3 border-t border-primary/20">
             <button
-              onClick={() => navigate('/upload')}
+              onClick={() => navigate("/upload")}
               className="w-full flex items-center justify-center gap-2 py-2 text-sm text-foreground hover:text-primary/80 transition-colors font-medium"
             >
               View All Uploads <ArrowRight className="w-4 h-4" />
@@ -137,18 +139,23 @@ export default function ActivityOverview() {
                       {arnsAssociation && arnsAssociation.arnsName ? (
                         <div className="flex items-center gap-2">
                           <a
-                            href={`https://${arnsAssociation.undername ? arnsAssociation.undername + '_' : ''}${arnsAssociation.arnsName}.ar.io`}
+                            href={`https://${arnsAssociation.undername ? arnsAssociation.undername + "_" : ""}${arnsAssociation.arnsName}.ar.io`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="font-mono text-xs text-foreground hover:text-success hover:underline transition-colors"
                           >
-                            {arnsAssociation.undername ? arnsAssociation.undername + '_' : ''}{arnsAssociation.arnsName}
+                            {arnsAssociation.undername
+                              ? arnsAssociation.undername + "_"
+                              : ""}
+                            {arnsAssociation.arnsName}
                           </a>
-                          {arnsAssociation.arnsStatus === 'failed' && (
+                          {arnsAssociation.arnsStatus === "failed" && (
                             <span className="text-xs text-error">(failed)</span>
                           )}
-                          {arnsAssociation.arnsStatus === 'pending' && (
-                            <span className="text-xs text-warning">(updating...)</span>
+                          {arnsAssociation.arnsStatus === "pending" && (
+                            <span className="text-xs text-warning">
+                              (updating...)
+                            </span>
                           )}
                         </div>
                       ) : (
@@ -162,7 +169,10 @@ export default function ActivityOverview() {
                     </div>
                     <div className="flex items-center gap-1">
                       <a
-                        href={getArweaveUrl(manifestId, group.manifest?.receipt?.dataCaches)}
+                        href={getArweaveUrl(
+                          manifestId,
+                          group.manifest?.receipt?.dataCaches,
+                        )}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="p-1 text-foreground/80 hover:text-foreground transition-colors"
@@ -195,8 +205,8 @@ export default function ActivityOverview() {
           <div className="px-4 py-3 border-t border-primary/20">
             <button
               onClick={() => {
-                navigate('/deployments');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                navigate("/deployments");
+                window.scrollTo({ top: 0, behavior: "smooth" });
               }}
               className="w-full flex items-center justify-center gap-2 py-2 text-sm text-foreground hover:text-primary/80 transition-colors font-medium"
             >

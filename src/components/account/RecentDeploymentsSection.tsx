@@ -1,11 +1,18 @@
-import { useState } from 'react';
-import { Globe, Receipt, Globe2, Folder, ExternalLink, Package } from 'lucide-react';
-import { useStore } from '../../store/useStore';
-import { getArweaveUrl } from '../../utils';
-import { useUploadStatus } from '../../hooks/useUploadStatus';
-import CopyButton from '../CopyButton';
-import ReceiptModal from '../modals/ReceiptModal';
-import { useNavigate } from 'react-router-dom';
+import { useState } from "react";
+import {
+  Globe,
+  Receipt,
+  Globe2,
+  Folder,
+  ExternalLink,
+  Package,
+} from "lucide-react";
+import { useStore } from "../../store/useStore";
+import { getArweaveUrl } from "../../utils";
+import { useUploadStatus } from "../../hooks/useUploadStatus";
+import CopyButton from "../CopyButton";
+import ReceiptModal from "../modals/ReceiptModal";
+import { useNavigate } from "react-router-dom";
 
 export default function RecentDeploymentsSection() {
   const { deployHistory } = useStore();
@@ -15,12 +22,17 @@ export default function RecentDeploymentsSection() {
   const navigate = useNavigate();
 
   // Get the most recent deployment entries first, then group them
-  const recentDeployHistory = deployHistory.slice(0, showAllDeployments ? deployHistory.length : 10); // Get more entries to ensure we have enough groups
+  const recentDeployHistory = deployHistory.slice(
+    0,
+    showAllDeployments ? deployHistory.length : 10,
+  ); // Get more entries to ensure we have enough groups
 
   // Group deploy results by manifest ID like in DeploySitePanel
-  const deploymentGroups: { [manifestId: string]: { manifest?: any, files?: any } } = {};
+  const deploymentGroups: {
+    [manifestId: string]: { manifest?: any; files?: any };
+  } = {};
 
-  recentDeployHistory.forEach(result => {
+  recentDeployHistory.forEach((result) => {
     const manifestId = result.manifestId || result.id;
     if (!manifestId) return;
 
@@ -28,25 +40,29 @@ export default function RecentDeploymentsSection() {
       deploymentGroups[manifestId] = {};
     }
 
-    if (result.type === 'manifest') {
+    if (result.type === "manifest") {
       deploymentGroups[manifestId].manifest = result;
-    } else if (result.type === 'files') {
+    } else if (result.type === "files") {
       deploymentGroups[manifestId].files = result;
     }
   });
 
   const deployments = Object.entries(deploymentGroups);
   const recentDeployments = deployments.slice(0, 5); // Show latest 5 groups
-  const displayDeployments = showAllDeployments ? deployments : recentDeployments;
+  const displayDeployments = showAllDeployments
+    ? deployments
+    : recentDeployments;
 
   if (deployments.length === 0) {
     return (
       <div className="bg-card/50 rounded-2xl p-6 text-center border border-border/20">
         <Globe className="w-12 h-12 text-foreground/80 mx-auto mb-4" />
         <h3 className="font-medium text-foreground mb-2">No Deployments Yet</h3>
-        <p className="text-sm text-foreground/80 mb-4">Deploy your first site to get started</p>
+        <p className="text-sm text-foreground/80 mb-4">
+          Deploy your first site to get started
+        </p>
         <button
-          onClick={() => navigate('/deploy')}
+          onClick={() => navigate("/deploy")}
           className="px-4 py-2 bg-foreground text-card rounded-full hover:bg-foreground/90 transition-colors"
         >
           Deploy Site
@@ -69,11 +85,11 @@ export default function RecentDeploymentsSection() {
               onClick={() => setShowAllDeployments(!showAllDeployments)}
               className="text-xs text-foreground/80 hover:text-foreground transition-colors"
             >
-              {showAllDeployments ? 'Show Less' : 'Show All'}
+              {showAllDeployments ? "Show Less" : "Show All"}
             </button>
           )}
           <button
-            onClick={() => navigate('/deployments')}
+            onClick={() => navigate("/deployments")}
             className="text-xs text-primary hover:text-primary/80 font-medium transition-colors"
           >
             View All Deployments →
@@ -84,7 +100,10 @@ export default function RecentDeploymentsSection() {
       {/* Deployment List */}
       <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
         {displayDeployments.map(([manifestId, group]) => (
-          <div key={manifestId} className="bg-card rounded-2xl p-4 border border-border/20">
+          <div
+            key={manifestId}
+            className="bg-card rounded-2xl p-4 border border-border/20"
+          >
             {/* Deployment Header */}
             <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
@@ -97,13 +116,19 @@ export default function RecentDeploymentsSection() {
                 {/* App Name with Version if available, else "Site Deployment" */}
                 {group.manifest?.appName ? (
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-foreground">{group.manifest.appName}</span>
+                    <span className="font-medium text-foreground">
+                      {group.manifest.appName}
+                    </span>
                     {group.manifest?.appVersion && (
-                      <span className="text-xs text-foreground/80">v{group.manifest.appVersion}</span>
+                      <span className="text-xs text-foreground/80">
+                        v{group.manifest.appVersion}
+                      </span>
                     )}
                   </div>
                 ) : (
-                  <span className="font-medium text-foreground">Site Deployment</span>
+                  <span className="font-medium text-foreground">
+                    Site Deployment
+                  </span>
                 )}
                 {group.manifest?.timestamp && (
                   <span className="text-xs text-foreground/80">
@@ -112,7 +137,10 @@ export default function RecentDeploymentsSection() {
                 )}
               </div>
               <a
-                href={getArweaveUrl(manifestId, group.manifest?.receipt?.dataCaches)}
+                href={getArweaveUrl(
+                  manifestId,
+                  group.manifest?.receipt?.dataCaches,
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 px-3 py-1.5 bg-success text-white rounded-full hover:bg-success/90 transition-colors text-xs font-medium"
@@ -131,14 +159,18 @@ export default function RecentDeploymentsSection() {
                   MANIFEST
                 </div>
                 <div className="font-mono text-sm text-foreground">
-                  {manifestId.substring(0, 8)}...{manifestId.substring(manifestId.length - 6)}
+                  {manifestId.substring(0, 8)}...
+                  {manifestId.substring(manifestId.length - 6)}
                 </div>
                 <CopyButton textToCopy={manifestId} />
               </div>
 
               <div className="flex items-center gap-1">
                 <a
-                  href={getArweaveUrl(manifestId, group.manifest?.receipt?.dataCaches)}
+                  href={getArweaveUrl(
+                    manifestId,
+                    group.manifest?.receipt?.dataCaches,
+                  )}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="p-1 text-foreground/80 hover:text-foreground transition-colors"
@@ -171,9 +203,11 @@ export default function RecentDeploymentsSection() {
       {showReceiptModal && (
         <ReceiptModal
           onClose={() => setShowReceiptModal(null)}
-          receipt={deployHistory.find(r =>
-            (r.type === 'manifest' && r.id === showReceiptModal) ||
-            (r.type === 'files' && r.files?.find(f => f.id === showReceiptModal))
+          receipt={deployHistory.find(
+            (r) =>
+              (r.type === "manifest" && r.id === showReceiptModal) ||
+              (r.type === "files" &&
+                r.files?.find((f) => f.id === showReceiptModal)),
           )}
           uploadId={showReceiptModal}
           initialStatus={uploadStatuses[showReceiptModal]}

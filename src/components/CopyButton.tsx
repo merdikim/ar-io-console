@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
+import { useState } from "react";
+import { Copy, Check } from "lucide-react";
 
 interface CopyButtonProps {
   textToCopy: string;
@@ -14,7 +14,7 @@ export default function CopyButton({ textToCopy }: CopyButtonProps) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy:', err);
+      console.error("Failed to copy:", err);
     }
   };
 
@@ -22,7 +22,7 @@ export default function CopyButton({ textToCopy }: CopyButtonProps) {
     <button
       onClick={handleCopy}
       className="p-1.5 text-foreground/80 hover:text-foreground transition-colors"
-      title={copied ? 'Copied!' : 'Copy to clipboard'}
+      title={copied ? "Copied!" : "Copy to clipboard"}
     >
       {copied ? (
         <Check className="w-4 h-4 text-success" />

@@ -1,9 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { getPaymentServiceConfig } from '../services/paymentService';
+import { useQuery } from "@tanstack/react-query";
+import { getPaymentServiceConfig } from "../services/paymentService";
 
 const useCountries = () => {
   const res = useQuery({
-    queryKey: ['countries'],
+    queryKey: ["countries"],
     queryFn: () => {
       const config = getPaymentServiceConfig();
       const serviceURL = `${config.paymentServiceUrl}/v1/countries`;

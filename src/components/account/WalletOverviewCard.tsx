@@ -1,11 +1,13 @@
-import { Wallet, ExternalLink } from 'lucide-react';
-import { useStore } from '../../store/useStore';
-import { usePrimaryArNSName } from '../../hooks/usePrimaryArNSName';
-import CopyButton from '../CopyButton';
+import { Wallet, ExternalLink } from "lucide-react";
+import { useStore } from "../../store/useStore";
+import { usePrimaryArNSName } from "../../hooks/usePrimaryArNSName";
+import CopyButton from "../CopyButton";
 
 export default function WalletOverviewCard() {
   const { address, walletType } = useStore();
-  const { arnsName, loading: loadingArNS } = usePrimaryArNSName(walletType !== 'solana' ? address : null);
+  const { arnsName, loading: loadingArNS } = usePrimaryArNSName(
+    walletType !== "solana" ? address : null,
+  );
 
   if (!address || !walletType) {
     return null;
@@ -23,17 +25,17 @@ export default function WalletOverviewCard() {
           <button
             onClick={() => {
               // Determine which explorer to use based on wallet type
-              let explorerUrl = '';
-              
-              if (walletType === 'ethereum') {
+              let explorerUrl = "";
+
+              if (walletType === "ethereum") {
                 explorerUrl = `https://etherscan.io/address/${address}`;
-              } else if (walletType === 'solana') {
+              } else if (walletType === "solana") {
                 explorerUrl = `https://explorer.solana.com/address/${address}`;
               } else {
                 explorerUrl = `https://viewblock.io/arweave/address/${address}`;
               }
-              
-              window.open(explorerUrl, '_blank');
+
+              window.open(explorerUrl, "_blank");
             }}
             className="p-1.5 rounded hover:bg-card transition-colors"
             title="View on Explorer"
@@ -42,7 +44,7 @@ export default function WalletOverviewCard() {
           </button>
         </div>
       </div>
-      
+
       <div className="space-y-2">
         {(arnsName || loadingArNS) && (
           <div className="flex items-center justify-between text-sm">
@@ -69,7 +71,9 @@ export default function WalletOverviewCard() {
         </div>
         <div className="flex items-center justify-between text-sm">
           <span className="text-foreground/80">Wallet Type:</span>
-          <span className="font-medium text-foreground capitalize">{walletType}</span>
+          <span className="font-medium text-foreground capitalize">
+            {walletType}
+          </span>
         </div>
       </div>
     </div>

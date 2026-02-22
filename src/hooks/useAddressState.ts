@@ -2,21 +2,19 @@ import {
   ArconnectSigner,
   TokenType,
   TurboSigner,
-} from '@ardrive/turbo-sdk/web';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+} from "@ardrive/turbo-sdk/web";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import {
   LAMPORTS_PER_SOL,
   PublicKey,
   SystemProgram,
   Transaction,
-} from '@solana/web3.js';
-import { useCallback, useEffect, useState } from 'react';
-import { parseEther } from 'viem';
-import {
-  useSendTransaction,
-} from 'wagmi';
-import { mainnet } from 'wagmi/chains';
-import { useStore } from '../store/useStore';
+} from "@solana/web3.js";
+import { useCallback, useEffect, useState } from "react";
+import { parseEther } from "viem";
+import { useSendTransaction } from "wagmi";
+import { mainnet } from "wagmi/chains";
+import { useStore } from "../store/useStore";
 
 export type TransferTransactionResult = {
   txid: string;
@@ -41,7 +39,7 @@ const useAddressState = (): AddressState | undefined => {
 
   // wagmi hooks for Ethereum transactions
   const { sendTransactionAsync } = useSendTransaction();
-  
+
   // Solana hooks for transactions
   const { sendTransaction: solanaSendTransaction } = useWallet();
   const { connection: solanaConnection } = useConnection();
@@ -54,25 +52,30 @@ const useAddressState = (): AddressState | undefined => {
 
     // Map our store's wallet state to AddressState format
     switch (walletType) {
-      case 'arweave':
+      case "arweave":
         setAddressState({
           address,
-          token: 'arweave',
+          token: "arweave",
           disconnect: clearAddress, // Use store's clearAddress instead of calling setAddress(null, null)
           explorerUrl: `https://viewblock.io/arweave/address/${address}`,
-          signer: window.arweaveWallet ? new ArconnectSigner(window.arweaveWallet) : undefined,
+          signer: window.arweaveWallet
+            ? new ArconnectSigner(window.arweaveWallet)
+            : undefined,
         });
         break;
 
-      case 'ethereum':
+      case "ethereum":
         setAddressState({
           address,
-          token: 'ethereum',
+          token: "ethereum",
           disconnect: clearAddress, // Use store's clearAddress
           explorerUrl: `https://etherscan.io/address/${address}`,
-          submitNativeTransaction: async (amount: number, toAddress: string) => {
-            if (!toAddress.startsWith('0x')) {
-              throw new Error('Invalid address');
+          submitNativeTransaction: async (
+            amount: number,
+            toAddress: string,
+          ) => {
+            if (!toAddress.startsWith("0x")) {
+              throw new Error("Invalid address");
             }
 
             try {
@@ -87,20 +90,23 @@ const useAddressState = (): AddressState | undefined => {
                 explorerURL: `https://etherscan.io/tx/${res}`,
               };
             } catch (error) {
-              console.error('Transaction failed', error);
+              console.error("Transaction failed", error);
               throw error;
             }
           },
         });
         break;
 
-      case 'solana':
+      case "solana":
         setAddressState({
           address,
-          token: 'solana',
+          token: "solana",
           disconnect: clearAddress, // Use store's clearAddress
           explorerUrl: `https://solscan.io/address/${address}`,
-          submitNativeTransaction: async (amount: number, toAddress: string) => {
+          submitNativeTransaction: async (
+            amount: number,
+            toAddress: string,
+          ) => {
             try {
               const publicKey = new PublicKey(address);
               const recipientPubKey = new PublicKey(toAddress);
@@ -114,18 +120,22 @@ const useAddressState = (): AddressState | undefined => {
 
               transaction.add(sendSolInstruction);
 
-              const signature = await solanaSendTransaction(transaction, solanaConnection);
+              const signature = await solanaSendTransaction(
+                transaction,
+                solanaConnection,
+              );
 
-              const latestBlockHash = await solanaConnection.getLatestBlockhash();
+              const latestBlockHash =
+                await solanaConnection.getLatestBlockhash();
               const res = await solanaConnection.confirmTransaction(
                 {
                   signature,
                   blockhash: latestBlockHash.blockhash,
                   lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
                 },
-                'processed',
+                "processed",
               );
-              
+
               if (res.value.err) {
                 throw res.value.err;
               }
@@ -135,7 +145,7 @@ const useAddressState = (): AddressState | undefined => {
                 explorerURL: `https://solscan.io/tx/${signature}`,
               };
             } catch (error) {
-              console.error('Transaction failed', error);
+              console.error("Transaction failed", error);
               throw error;
             }
           },
@@ -146,7 +156,14 @@ const useAddressState = (): AddressState | undefined => {
         setAddressState(undefined);
         break;
     }
-  }, [address, walletType, clearAddress, sendTransactionAsync, solanaSendTransaction, solanaConnection]);
+  }, [
+    address,
+    walletType,
+    clearAddress,
+    sendTransactionAsync,
+    solanaSendTransaction,
+    solanaConnection,
+  ]);
 
   useEffect(() => {
     updateAddressState();

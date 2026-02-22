@@ -1,4 +1,4 @@
-import TopUpPanel from '../components/panels/TopUpPanel';
+import TopUpPanel from "../components/panels/TopUpPanel";
 
 export default function TopUpPage() {
   return (

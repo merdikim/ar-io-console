@@ -1,17 +1,34 @@
-import { useState, useEffect } from 'react';
-import { Globe, X, Loader2, AlertCircle, RefreshCw, ChevronDown, Check, ExternalLink, ChevronRight } from 'lucide-react';
-import { Listbox } from '@headlessui/react';
-import BaseModal from './BaseModal';
-import { useOwnedArNSNames } from '../../hooks/useOwnedArNSNames';
-import { useStore } from '../../store/useStore';
-import { sanitizeUndername, hasInvalidCharacters } from '../../utils/undernames';
+import { useState, useEffect } from "react";
+import {
+  Globe,
+  X,
+  Loader2,
+  AlertCircle,
+  RefreshCw,
+  ChevronDown,
+  Check,
+  ExternalLink,
+  ChevronRight,
+} from "lucide-react";
+import { Listbox } from "@headlessui/react";
+import BaseModal from "./BaseModal";
+import { useOwnedArNSNames } from "../../hooks/useOwnedArNSNames";
+import { useStore } from "../../store/useStore";
+import {
+  sanitizeUndername,
+  hasInvalidCharacters,
+} from "../../utils/undernames";
 
 interface AssignDomainModalProps {
   onClose: () => void;
   manifestId: string;
   existingArnsName?: string;
   existingUndername?: string;
-  onSuccess: (arnsName: string, undername?: string, transactionId?: string) => void;
+  onSuccess: (
+    arnsName: string,
+    undername?: string,
+    transactionId?: string,
+  ) => void;
 }
 
 export default function AssignDomainModal({
@@ -19,25 +36,42 @@ export default function AssignDomainModal({
   manifestId,
   existingArnsName,
   existingUndername,
-  onSuccess
+  onSuccess,
 }: AssignDomainModalProps) {
   const { walletType } = useStore();
-  const { names, loading, loadingDetails, fetchOwnedNames, fetchNameDetails, updateArNSRecord } = useOwnedArNSNames();
+  const {
+    names,
+    loading,
+    loadingDetails,
+    fetchOwnedNames,
+    fetchNameDetails,
+    updateArNSRecord,
+  } = useOwnedArNSNames();
 
-  const [selectedArnsName, setSelectedArnsName] = useState(existingArnsName || '');
-  const [selectedUndername, setSelectedUndername] = useState(existingUndername || '');
-  const [undernameMode, setUndernameMode] = useState<'none' | 'new' | 'existing'>(
+  const [selectedArnsName, setSelectedArnsName] = useState(
+    existingArnsName || "",
+  );
+  const [selectedUndername, setSelectedUndername] = useState(
+    existingUndername || "",
+  );
+  const [undernameMode, setUndernameMode] = useState<
+    "none" | "new" | "existing"
+  >(
     existingUndername
-      ? (names.find(n => n.name === existingArnsName)?.undernames?.includes(existingUndername) ? 'existing' : 'new')
-      : 'none'
+      ? names
+          .find((n) => n.name === existingArnsName)
+          ?.undernames?.includes(existingUndername)
+        ? "existing"
+        : "new"
+      : "none",
   );
   const [isAssigning, setIsAssigning] = useState(false);
   const [error, setError] = useState<string>();
 
   // TTL settings
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [ttlMode, setTTLMode] = useState<'existing' | 'custom'>('existing');
-  const [customTTLInput, setCustomTTLInput] = useState<string>('600');
+  const [ttlMode, setTTLMode] = useState<"existing" | "custom">("existing");
+  const [customTTLInput, setCustomTTLInput] = useState<string>("600");
 
   // Auto-fetch names when modal opens
   useEffect(() => {
@@ -48,21 +82,26 @@ export default function AssignDomainModal({
 
   // Auto-update undername mode based on selection
   useEffect(() => {
-    if (undernameMode === 'none') {
-      setSelectedUndername('');
+    if (undernameMode === "none") {
+      setSelectedUndername("");
     }
   }, [undernameMode]);
 
   // Computed values
-  const selectedNameRecord = names.find(name => name.name === selectedArnsName);
+  const selectedNameRecord = names.find(
+    (name) => name.name === selectedArnsName,
+  );
   const displayName = selectedNameRecord?.displayName || selectedArnsName;
-  const isExistingUndername = selectedUndername && selectedNameRecord?.undernames?.includes(selectedUndername);
+  const isExistingUndername =
+    selectedUndername &&
+    selectedNameRecord?.undernames?.includes(selectedUndername);
   const isNewUndername = selectedUndername && !isExistingUndername;
 
   // Get current TTL (either for undername or base name)
-  const currentTTL = selectedUndername && selectedNameRecord?.undernameTTLs?.[selectedUndername]
-    ? selectedNameRecord.undernameTTLs[selectedUndername]
-    : selectedNameRecord?.ttl || 600;
+  const currentTTL =
+    selectedUndername && selectedNameRecord?.undernameTTLs?.[selectedUndername]
+      ? selectedNameRecord.undernameTTLs[selectedUndername]
+      : selectedNameRecord?.ttl || 600;
 
   // Format TTL for display
   const formatTTL = (seconds: number) => {
@@ -73,34 +112,36 @@ export default function AssignDomainModal({
 
   // Update customTTLInput when current TTL changes
   useEffect(() => {
-    if (currentTTL && ttlMode === 'existing') {
+    if (currentTTL && ttlMode === "existing") {
       setCustomTTLInput(currentTTL.toString());
     }
   }, [currentTTL, ttlMode]);
 
   const handleAssignDomain = async () => {
     if (!selectedArnsName) {
-      setError('Please select an ArNS name');
+      setError("Please select an ArNS name");
       return;
     }
 
     // Validate and sanitize TTL input before proceeding
     let validatedTTL: number | undefined;
-    if (ttlMode === 'custom') {
+    if (ttlMode === "custom") {
       const trimmedInput = customTTLInput.trim();
-      if (trimmedInput === '') {
-        setError('Please enter a TTL value');
+      if (trimmedInput === "") {
+        setError("Please enter a TTL value");
         return;
       }
 
       const parsedTTL = parseInt(trimmedInput, 10);
       if (isNaN(parsedTTL)) {
-        setError('TTL must be a valid number');
+        setError("TTL must be a valid number");
         return;
       }
 
       if (parsedTTL < 60 || parsedTTL > 86400) {
-        setError('TTL must be between 60 seconds (1 minute) and 86400 seconds (24 hours)');
+        setError(
+          "TTL must be between 60 seconds (1 minute) and 86400 seconds (24 hours)",
+        );
         return;
       }
 
@@ -116,17 +157,23 @@ export default function AssignDomainModal({
         selectedArnsName,
         manifestId,
         selectedUndername || undefined,
-        validatedTTL
+        validatedTTL,
       );
 
       if (result.success) {
-        onSuccess(selectedArnsName, selectedUndername || undefined, result.transactionId);
+        onSuccess(
+          selectedArnsName,
+          selectedUndername || undefined,
+          result.transactionId,
+        );
       } else {
-        setError(result.error || 'Domain assignment failed');
+        setError(result.error || "Domain assignment failed");
       }
     } catch (error) {
-      console.error('Domain assignment error:', error);
-      setError(error instanceof Error ? error.message : 'Domain assignment failed');
+      console.error("Domain assignment error:", error);
+      setError(
+        error instanceof Error ? error.message : "Domain assignment failed",
+      );
     } finally {
       setIsAssigning(false);
     }
@@ -146,7 +193,9 @@ export default function AssignDomainModal({
                 {existingArnsName ? "Change Domain" : "Assign Domain"}
               </h3>
               <p className="text-sm text-foreground/80">
-                {existingArnsName ? "Update the domain assignment for this deployment" : "Connect your deployment to an ArNS domain"}
+                {existingArnsName
+                  ? "Update the domain assignment for this deployment"
+                  : "Connect your deployment to an ArNS domain"}
               </p>
             </div>
           </div>
@@ -162,7 +211,9 @@ export default function AssignDomainModal({
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Deployment Context */}
           <div className="bg-card rounded-2xl p-4">
-            <div className="text-sm text-foreground/80 mb-2">Deployment to assign:</div>
+            <div className="text-sm text-foreground/80 mb-2">
+              Deployment to assign:
+            </div>
             <div className="font-mono text-sm text-foreground break-all">
               {manifestId}
             </div>
@@ -184,10 +235,13 @@ export default function AssignDomainModal({
                       No ArNS names found
                     </div>
                     <div className="text-sm text-foreground/80 mb-3">
-                      You need to own an ArNS name first. You can purchase names from the AR.IO Network.
+                      You need to own an ArNS name first. You can purchase names
+                      from the AR.IO Network.
                     </div>
                     <button
-                      onClick={() => window.open('https://ar.io/arns', '_blank')}
+                      onClick={() =>
+                        window.open("https://ar.io/arns", "_blank")
+                      }
                       className="px-3 py-1.5 bg-primary text-white rounded-full text-xs hover:bg-primary/90 transition-colors"
                     >
                       Learn More About ArNS
@@ -209,7 +263,9 @@ export default function AssignDomainModal({
                       className="flex items-center gap-1 px-2 py-1 text-xs text-foreground hover:text-foreground/80 transition-colors disabled:opacity-50"
                       title="Refresh ArNS names"
                     >
-                      <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
+                      <RefreshCw
+                        className={`w-3 h-3 ${loading ? "animate-spin" : ""}`}
+                      />
                       Refresh
                     </button>
                   </div>
@@ -219,8 +275,8 @@ export default function AssignDomainModal({
                     onChange={async (name) => {
                       setSelectedArnsName(name);
                       // Clear undername when switching names
-                      setSelectedUndername('');
-                      setUndernameMode('none');
+                      setSelectedUndername("");
+                      setUndernameMode("none");
                       // Fetch ANT details on-demand when name is selected
                       if (name) {
                         await fetchNameDetails(name);
@@ -232,18 +288,29 @@ export default function AssignDomainModal({
                       <Listbox.Button className="relative w-full px-3 py-2 bg-card border border-border/20 rounded-2xl text-foreground focus:border-primary focus:outline-none disabled:opacity-50 text-left cursor-pointer">
                         <span className="block truncate">
                           {selectedArnsName ? (
-                            names.find(n => n.name === selectedArnsName)?.displayName !== selectedArnsName
-                              ? `${names.find(n => n.name === selectedArnsName)?.displayName} (${selectedArnsName})`
-                              : selectedArnsName
+                            names.find((n) => n.name === selectedArnsName)
+                              ?.displayName !== selectedArnsName ? (
+                              `${names.find((n) => n.name === selectedArnsName)?.displayName} (${selectedArnsName})`
+                            ) : (
+                              selectedArnsName
+                            )
                           ) : (
-                            <span className="text-foreground/80">Choose a name...</span>
+                            <span className="text-foreground/80">
+                              Choose a name...
+                            </span>
                           )}
                         </span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                           {loadingDetails[selectedArnsName] ? (
-                            <Loader2 className="h-4 w-4 text-foreground/80 animate-spin" aria-hidden="true" />
+                            <Loader2
+                              className="h-4 w-4 text-foreground/80 animate-spin"
+                              aria-hidden="true"
+                            />
                           ) : (
-                            <ChevronDown className="h-4 w-4 text-foreground/80" aria-hidden="true" />
+                            <ChevronDown
+                              className="h-4 w-4 text-foreground/80"
+                              aria-hidden="true"
+                            />
                           )}
                         </span>
                       </Listbox.Button>
@@ -252,32 +319,43 @@ export default function AssignDomainModal({
                           value=""
                           className={({ active }) =>
                             `relative cursor-pointer select-none py-2 pl-3 pr-9 ${
-                              active ? 'bg-card text-foreground' : 'text-foreground/80'
+                              active
+                                ? "bg-card text-foreground"
+                                : "text-foreground/80"
                             }`
                           }
                         >
-                          <span className="block truncate">Choose a name...</span>
+                          <span className="block truncate">
+                            Choose a name...
+                          </span>
                         </Listbox.Option>
-                        {names.map(name => (
+                        {names.map((name) => (
                           <Listbox.Option
                             key={name.name}
                             value={name.name}
                             className={({ active }) =>
                               `relative cursor-pointer select-none py-2 pl-3 pr-9 ${
-                                active ? 'bg-card text-foreground' : 'text-foreground'
+                                active
+                                  ? "bg-card text-foreground"
+                                  : "text-foreground"
                               }`
                             }
                           >
                             {({ selected }) => (
                               <>
-                                <span className={`block truncate ${selected ? 'font-medium' : 'font-normal'}`}>
+                                <span
+                                  className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                                >
                                   {name.displayName !== name.name
                                     ? `${name.displayName} (${name.name})`
                                     : name.displayName}
                                 </span>
                                 {selected && (
                                   <span className="absolute inset-y-0 right-0 flex items-center pr-3 text-primary">
-                                    <Check className="h-4 w-4" aria-hidden="true" />
+                                    <Check
+                                      className="h-4 w-4"
+                                      aria-hidden="true"
+                                    />
                                   </span>
                                 )}
                               </>
@@ -292,124 +370,138 @@ export default function AssignDomainModal({
                 {/* Compact Undername Selection - Only show after ArNS name is selected */}
                 {selectedArnsName && (
                   <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">
-                    Undername:
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 mb-3">
-                    <button
-                      onClick={() => setUndernameMode('none')}
-                      disabled={!selectedArnsName}
-                      className={`py-2 px-3 rounded-2xl text-sm transition-colors border ${
-                        undernameMode === 'none'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/20 text-foreground/80 hover:bg-card disabled:opacity-50'
-                      }`}
-                    >
-                      None
-                    </button>
-                    <button
-                      onClick={() => setUndernameMode('new')}
-                      disabled={!selectedArnsName}
-                      className={`py-2 px-3 rounded-2xl text-sm transition-colors border ${
-                        undernameMode === 'new'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/20 text-foreground/80 hover:bg-card disabled:opacity-50'
-                      }`}
-                    >
-                      New
-                    </button>
-                    <button
-                      onClick={() => setUndernameMode('existing')}
-                      disabled={!selectedArnsName || !selectedNameRecord?.undernames?.length}
-                      className={`py-2 px-3 rounded-2xl text-sm transition-colors border ${
-                        undernameMode === 'existing'
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-border/20 text-foreground/80 hover:bg-card disabled:opacity-50'
-                      }`}
-                    >
-                      Existing
-                    </button>
-                  </div>
-
-                  {/* Conditional Content Based on Mode */}
-                  {undernameMode === 'existing' && selectedNameRecord?.undernames && (
-                    <div className="space-y-2">
-                      <div className="text-xs text-foreground/80 mb-2">Select existing undername:</div>
-                      <div className="flex flex-wrap gap-2">
-                        {selectedNameRecord.undernames.map(undername => (
-                          <button
-                            key={undername}
-                            onClick={() => setSelectedUndername(undername)}
-                            className={`px-3 py-1.5 rounded-2xl text-sm transition-colors border ${
-                              selectedUndername === undername
-                                ? 'bg-primary text-white border-primary'
-                                : 'bg-card border-border/20 text-foreground hover:border-primary/50'
-                            }`}
-                          >
-                            {undername}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {undernameMode === 'new' && (
-                    <div>
-                      <input
-                        type="text"
-                        value={selectedUndername || ''}
-                        onChange={(e) => {
-                          // Allow free typing - no sanitization on change
-                          setSelectedUndername(e.target.value);
-                        }}
-                        onBlur={(e) => {
-                          // Sanitize when user leaves the field
-                          const sanitized = sanitizeUndername(e.target.value);
-                          if (sanitized !== e.target.value) {
-                            setSelectedUndername(sanitized);
-                          }
-                        }}
-                        placeholder="my_blog, docs, app..."
-                        className={`w-full px-3 py-2 bg-card border rounded-2xl text-foreground focus:ring-2 text-sm transition-colors ${
-                          selectedUndername && hasInvalidCharacters(selectedUndername)
-                            ? 'border-warning focus:ring-warning'
-                            : 'border-border/20 focus:ring-primary'
+                    <label className="block text-sm font-medium text-foreground mb-2">
+                      Undername:
+                    </label>
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      <button
+                        onClick={() => setUndernameMode("none")}
+                        disabled={!selectedArnsName}
+                        className={`py-2 px-3 rounded-2xl text-sm transition-colors border ${
+                          undernameMode === "none"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/20 text-foreground/80 hover:bg-card disabled:opacity-50"
                         }`}
-                      />
-                      <p className="text-xs mt-1">
-                        {selectedUndername ? (
-                          hasInvalidCharacters(selectedUndername) ? (
-                            <span className="text-warning">
-                              Will be sanitized to: {sanitizeUndername(selectedUndername)}_{selectedArnsName}.ar.io
-                            </span>
+                      >
+                        None
+                      </button>
+                      <button
+                        onClick={() => setUndernameMode("new")}
+                        disabled={!selectedArnsName}
+                        className={`py-2 px-3 rounded-2xl text-sm transition-colors border ${
+                          undernameMode === "new"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/20 text-foreground/80 hover:bg-card disabled:opacity-50"
+                        }`}
+                      >
+                        New
+                      </button>
+                      <button
+                        onClick={() => setUndernameMode("existing")}
+                        disabled={
+                          !selectedArnsName ||
+                          !selectedNameRecord?.undernames?.length
+                        }
+                        className={`py-2 px-3 rounded-2xl text-sm transition-colors border ${
+                          undernameMode === "existing"
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border/20 text-foreground/80 hover:bg-card disabled:opacity-50"
+                        }`}
+                      >
+                        Existing
+                      </button>
+                    </div>
+
+                    {/* Conditional Content Based on Mode */}
+                    {undernameMode === "existing" &&
+                      selectedNameRecord?.undernames && (
+                        <div className="space-y-2">
+                          <div className="text-xs text-foreground/80 mb-2">
+                            Select existing undername:
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {selectedNameRecord.undernames.map((undername) => (
+                              <button
+                                key={undername}
+                                onClick={() => setSelectedUndername(undername)}
+                                className={`px-3 py-1.5 rounded-2xl text-sm transition-colors border ${
+                                  selectedUndername === undername
+                                    ? "bg-primary text-white border-primary"
+                                    : "bg-card border-border/20 text-foreground hover:border-primary/50"
+                                }`}
+                              >
+                                {undername}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                    {undernameMode === "new" && (
+                      <div>
+                        <input
+                          type="text"
+                          value={selectedUndername || ""}
+                          onChange={(e) => {
+                            // Allow free typing - no sanitization on change
+                            setSelectedUndername(e.target.value);
+                          }}
+                          onBlur={(e) => {
+                            // Sanitize when user leaves the field
+                            const sanitized = sanitizeUndername(e.target.value);
+                            if (sanitized !== e.target.value) {
+                              setSelectedUndername(sanitized);
+                            }
+                          }}
+                          placeholder="my_blog, docs, app..."
+                          className={`w-full px-3 py-2 bg-card border rounded-2xl text-foreground focus:ring-2 text-sm transition-colors ${
+                            selectedUndername &&
+                            hasInvalidCharacters(selectedUndername)
+                              ? "border-warning focus:ring-warning"
+                              : "border-border/20 focus:ring-primary"
+                          }`}
+                        />
+                        <p className="text-xs mt-1">
+                          {selectedUndername ? (
+                            hasInvalidCharacters(selectedUndername) ? (
+                              <span className="text-warning">
+                                Will be sanitized to:{" "}
+                                {sanitizeUndername(selectedUndername)}_
+                                {selectedArnsName}.ar.io
+                              </span>
+                            ) : (
+                              <span className="text-foreground/80">
+                                Will create: {selectedUndername}_
+                                {selectedArnsName}.ar.io
+                              </span>
+                            )
                           ) : (
                             <span className="text-foreground/80">
-                              Will create: {selectedUndername}_{selectedArnsName}.ar.io
+                              Lowercase letters, numbers, hyphens, and
+                              underscores. Cannot start/end with - or _.
                             </span>
-                          )
-                        ) : (
-                          <span className="text-foreground/80">
-                            Lowercase letters, numbers, hyphens, and underscores. Cannot start/end with - or _.
-                          </span>
-                        )}
-                      </p>
-                    </div>
-                  )}
+                          )}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 )}
 
                 {/* Preview */}
                 {selectedArnsName && (
                   <div className="bg-card/50 rounded-2xl p-4">
-                    <div className="text-sm font-medium text-foreground mb-2">Preview:</div>
+                    <div className="text-sm font-medium text-foreground mb-2">
+                      Preview:
+                    </div>
                     <div className="flex items-center gap-2 mb-2">
                       <a
-                        href={`https://${selectedUndername ? selectedUndername + '_' : ''}${selectedArnsName}.ar.io`}
+                        href={`https://${selectedUndername ? selectedUndername + "_" : ""}${selectedArnsName}.ar.io`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-sm font-mono text-foreground hover:underline flex items-center gap-1"
                       >
-                        {selectedUndername ? selectedUndername + '_' : ''}{displayName}.ar.io
+                        {selectedUndername ? selectedUndername + "_" : ""}
+                        {displayName}.ar.io
                         <ExternalLink className="w-3 h-3" />
                       </a>
                     </div>
@@ -424,11 +516,13 @@ export default function AssignDomainModal({
                         Existing undername - will be updated
                       </div>
                     )}
-                    {!selectedUndername && selectedNameRecord?.currentTarget && (
-                      <div className="text-xs text-foreground/80">
-                        Currently points to: {selectedNameRecord.currentTarget.substring(0, 6)}...
-                      </div>
-                    )}
+                    {!selectedUndername &&
+                      selectedNameRecord?.currentTarget && (
+                        <div className="text-xs text-foreground/80">
+                          Currently points to:{" "}
+                          {selectedNameRecord.currentTarget.substring(0, 6)}...
+                        </div>
+                      )}
                   </div>
                 )}
 
@@ -439,7 +533,9 @@ export default function AssignDomainModal({
                       onClick={() => setShowAdvanced(!showAdvanced)}
                       className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-foreground/80 transition-colors w-full"
                     >
-                      <ChevronRight className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-90' : ''}`} />
+                      <ChevronRight
+                        className={`w-4 h-4 transition-transform ${showAdvanced ? "rotate-90" : ""}`}
+                      />
                       Advanced Settings
                     </button>
 
@@ -456,8 +552,8 @@ export default function AssignDomainModal({
                               <input
                                 type="radio"
                                 name="ttl-mode"
-                                checked={ttlMode === 'existing'}
-                                onChange={() => setTTLMode('existing')}
+                                checked={ttlMode === "existing"}
+                                onChange={() => setTTLMode("existing")}
                                 className="mt-0.5 w-4 h-4 bg-card border-2 border-border/20 rounded-full checked:bg-card checked:border-primary transition-colors"
                               />
                               <div className="flex-1">
@@ -465,7 +561,9 @@ export default function AssignDomainModal({
                                   Keep existing TTL
                                 </div>
                                 <div className="text-xs text-foreground/80 mt-0.5">
-                                  Preserve current setting ({formatTTL(currentTTL)} / {currentTTL} seconds)
+                                  Preserve current setting (
+                                  {formatTTL(currentTTL)} / {currentTTL}{" "}
+                                  seconds)
                                 </div>
                               </div>
                             </label>
@@ -474,15 +572,15 @@ export default function AssignDomainModal({
                               <input
                                 type="radio"
                                 name="ttl-mode"
-                                checked={ttlMode === 'custom'}
-                                onChange={() => setTTLMode('custom')}
+                                checked={ttlMode === "custom"}
+                                onChange={() => setTTLMode("custom")}
                                 className="mt-0.5 w-4 h-4 bg-card border-2 border-border/20 rounded-full checked:bg-card checked:border-primary transition-colors"
                               />
                               <div className="flex-1">
                                 <div className="text-sm text-foreground group-hover:text-foreground/80 transition-colors">
                                   Set custom TTL
                                 </div>
-                                {ttlMode === 'custom' && (
+                                {ttlMode === "custom" && (
                                   <div className="mt-3 space-y-2">
                                     <div className="flex gap-2">
                                       <input
@@ -490,7 +588,9 @@ export default function AssignDomainModal({
                                         min="60"
                                         max="86400"
                                         value={customTTLInput}
-                                        onChange={(e) => setCustomTTLInput(e.target.value)}
+                                        onChange={(e) =>
+                                          setCustomTTLInput(e.target.value)
+                                        }
                                         className="flex-1 px-3 py-2 bg-card border border-border/20 rounded-2xl text-foreground text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                                         placeholder="600"
                                       />
@@ -503,28 +603,30 @@ export default function AssignDomainModal({
                                     <div className="flex gap-2">
                                       <button
                                         type="button"
-                                        onClick={() => setCustomTTLInput('300')}
+                                        onClick={() => setCustomTTLInput("300")}
                                         className="px-3 py-1.5 bg-card border border-border/20 rounded text-xs text-foreground/80 hover:border-primary hover:text-foreground transition-colors"
                                       >
                                         5 min
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => setCustomTTLInput('600')}
+                                        onClick={() => setCustomTTLInput("600")}
                                         className="px-3 py-1.5 bg-card border border-border/20 rounded text-xs text-foreground/80 hover:border-primary hover:text-foreground transition-colors"
                                       >
                                         10 min
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => setCustomTTLInput('900')}
+                                        onClick={() => setCustomTTLInput("900")}
                                         className="px-3 py-1.5 bg-card border border-border/20 rounded text-xs text-foreground/80 hover:border-primary hover:text-foreground transition-colors"
                                       >
                                         15 min
                                       </button>
                                       <button
                                         type="button"
-                                        onClick={() => setCustomTTLInput('3600')}
+                                        onClick={() =>
+                                          setCustomTTLInput("3600")
+                                        }
                                         className="px-3 py-1.5 bg-card border border-border/20 rounded text-xs text-foreground/80 hover:border-primary hover:text-foreground transition-colors"
                                       >
                                         1 hour
@@ -538,8 +640,14 @@ export default function AssignDomainModal({
 
                           {/* Help Text */}
                           <div className="mt-3 text-xs text-foreground/80 bg-primary/5 rounded p-3 border border-primary/20">
-                            <div className="font-medium text-foreground mb-1">What is TTL?</div>
-                            TTL controls how long AR.IO gateways cache your content before checking for updates. Lower values (5-10 min) are better for frequently updated content, while higher values (1 hour+) work well for static sites and reduce network requests.
+                            <div className="font-medium text-foreground mb-1">
+                              What is TTL?
+                            </div>
+                            TTL controls how long AR.IO gateways cache your
+                            content before checking for updates. Lower values
+                            (5-10 min) are better for frequently updated
+                            content, while higher values (1 hour+) work well for
+                            static sites and reduce network requests.
                           </div>
                         </div>
                       </div>
@@ -558,11 +666,12 @@ export default function AssignDomainModal({
           )}
 
           {/* Wallet Compatibility Warning */}
-          {walletType === 'solana' && (
+          {walletType === "solana" && (
             <div className="bg-warning/10 border border-warning/20 rounded-2xl p-4">
               <div className="flex items-center gap-2">
                 <div className="text-warning text-sm">
-                  Solana wallets cannot update ArNS records. Please switch to an Arweave or Ethereum wallet.
+                  Solana wallets cannot update ArNS records. Please switch to an
+                  Arweave or Ethereum wallet.
                 </div>
               </div>
             </div>
@@ -581,7 +690,13 @@ export default function AssignDomainModal({
 
           <button
             onClick={handleAssignDomain}
-            disabled={!selectedArnsName || isAssigning || walletType === 'solana' || (undernameMode === 'new' && !selectedUndername) || (undernameMode === 'existing' && !selectedUndername)}
+            disabled={
+              !selectedArnsName ||
+              isAssigning ||
+              walletType === "solana" ||
+              (undernameMode === "new" && !selectedUndername) ||
+              (undernameMode === "existing" && !selectedUndername)
+            }
             className="px-6 py-3 rounded-full bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isAssigning ? (

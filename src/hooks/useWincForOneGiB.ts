@@ -1,4 +1,12 @@
-import { tokenToBaseMap, TurboFactory, ETHToTokenAmount, SOLToTokenAmount, ARToTokenAmount, ARIOToTokenAmount, POLToTokenAmount } from "@ardrive/turbo-sdk/web";
+import {
+  tokenToBaseMap,
+  TurboFactory,
+  ETHToTokenAmount,
+  SOLToTokenAmount,
+  ARToTokenAmount,
+  ARIOToTokenAmount,
+  POLToTokenAmount,
+} from "@ardrive/turbo-sdk/web";
 import { useState, useEffect } from "react";
 import { useTurboConfig } from "./useTurboConfig";
 
@@ -25,7 +33,7 @@ export function useWincForToken(token: "arweave" | "ario", amount: number) {
     undefined,
   );
   const turboConfig = useTurboConfig();
-  
+
   useEffect(() => {
     TurboFactory.unauthenticated({ ...turboConfig, token })
       .getWincForToken({
@@ -42,24 +50,24 @@ export function useWincForToken(token: "arweave" | "ario", amount: number) {
 // Get proper token amount with unit conversion (following reference app pattern)
 const getAmountByTokenType = (amount: number, token: string) => {
   switch (token) {
-    case 'arweave':
+    case "arweave":
       return ARToTokenAmount(amount);
-    case 'ethereum':
-    case 'base-eth':
-      return ETHToTokenAmount(amount);  // Converts to wei for both mainnet and Base
-    case 'solana':
-      return SOLToTokenAmount(amount);  // Converts to lamports
-    case 'ario':
-    case 'base-ario':
+    case "ethereum":
+    case "base-eth":
+      return ETHToTokenAmount(amount); // Converts to wei for both mainnet and Base
+    case "solana":
+      return SOLToTokenAmount(amount); // Converts to lamports
+    case "ario":
+    case "base-ario":
       return ARIOToTokenAmount(amount); // Proper ARIO token conversion (6 decimals for both AO and Base)
-    case 'pol':
+    case "pol":
       return POLToTokenAmount(amount); // Proper POL token conversion
-    case 'usdc':
-    case 'base-usdc':
-    case 'polygon-usdc':
+    case "usdc":
+    case "base-usdc":
+    case "polygon-usdc":
       return amount * 1e6; // USDC uses 6 decimals
     // For now, these tokens use base amounts - may need specific converters later
-    case 'kyve':
+    case "kyve":
       return amount * 1e18; // Most ERC20 tokens use 18 decimals
     default:
       return amount;
@@ -67,14 +75,18 @@ const getAmountByTokenType = (amount: number, token: string) => {
 };
 
 // Direct API call for getting winc price (following reference app pattern)
-const getWincForToken = async (amount: number, tokenType: string, paymentServiceUrl: string): Promise<{ winc: string }> => {
-  const PAYMENT_SERVICE_FQDN = paymentServiceUrl.replace('https://', '');
+const getWincForToken = async (
+  amount: number,
+  tokenType: string,
+  paymentServiceUrl: string,
+): Promise<{ winc: string }> => {
+  const PAYMENT_SERVICE_FQDN = paymentServiceUrl.replace("https://", "");
   const url = `https://${PAYMENT_SERVICE_FQDN}/v1/price/${tokenType}/${amount}`;
 
   const response = await fetch(url);
 
   if (response.status === 404) {
-    return { winc: '0' };
+    return { winc: "0" };
   }
 
   if (!response.ok) {
@@ -86,7 +98,9 @@ const getWincForToken = async (amount: number, tokenType: string, paymentService
 
 // Extended hook to support all supported token types (using reference app approach)
 export function useWincForAnyToken(token: string, amount: number) {
-  const [wincForToken, setWincForToken] = useState<string | undefined>(undefined);
+  const [wincForToken, setWincForToken] = useState<string | undefined>(
+    undefined,
+  );
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const turboConfig = useTurboConfig(token); // Pass token to get proper gatewayUrl for dev mode
@@ -111,7 +125,11 @@ export function useWincForAnyToken(token: string, amount: number) {
         }
 
         // For USDC tokens, use SDK method instead of direct API (API might not support USDC yet)
-        if (token === 'usdc' || token === 'base-usdc' || token === 'polygon-usdc') {
+        if (
+          token === "usdc" ||
+          token === "base-usdc" ||
+          token === "polygon-usdc"
+        ) {
           const turbo = TurboFactory.unauthenticated({
             token: token as any,
             paymentServiceConfig: turboConfig.paymentServiceConfig,
@@ -119,7 +137,9 @@ export function useWincForAnyToken(token: string, amount: number) {
           });
 
           // Use getWincForToken method (converts token amount to winc)
-          const result = await turbo.getWincForToken({ tokenAmount: tokenAmount.toString() });
+          const result = await turbo.getWincForToken({
+            tokenAmount: tokenAmount.toString(),
+          });
 
           if (result.winc && Number(result.winc) > 0) {
             setWincForToken(result.winc);
@@ -128,8 +148,14 @@ export function useWincForAnyToken(token: string, amount: number) {
           }
         } else {
           // Use direct API call for other tokens
-          const paymentServiceUrl = turboConfig.paymentServiceConfig?.url || 'https://payment.ardrive.io';
-          const result = await getWincForToken(+tokenAmount, token, paymentServiceUrl);
+          const paymentServiceUrl =
+            turboConfig.paymentServiceConfig?.url ||
+            "https://payment.ardrive.io";
+          const result = await getWincForToken(
+            +tokenAmount,
+            token,
+            paymentServiceUrl,
+          );
 
           if (result.winc && Number(result.winc) > 0) {
             setWincForToken(result.winc);
@@ -139,7 +165,10 @@ export function useWincForAnyToken(token: string, amount: number) {
         }
       } catch (err) {
         console.warn(`Pricing failed for ${token}:`, err);
-        const errorMessage = err instanceof Error ? err.message : `${token.toUpperCase()} pricing not available`;
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : `${token.toUpperCase()} pricing not available`;
         setError(errorMessage);
         setWincForToken(undefined);
       } finally {

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useStore } from '../store/useStore';
-import { getARIO, getANT, getArweaveUrl } from '../utils';
+import { useEffect, useState } from "react";
+import { useStore } from "../store/useStore";
+import { getARIO, getANT, getArweaveUrl } from "../utils";
 
 // Check if address is valid for ArNS operations (Arweave or Ethereum)
 function checkValidAddress(address: string): boolean {
@@ -8,7 +8,7 @@ function checkValidAddress(address: string): boolean {
   const arweavePattern = /^[a-zA-Z0-9_-]{43}$/;
   // Ethereum addresses: 42 characters, starts with 0x
   const ethereumPattern = /^0x[a-fA-F0-9]{40}$/;
-  
+
   return arweavePattern.test(address) || ethereumPattern.test(address);
 }
 
@@ -16,10 +16,10 @@ function checkValidAddress(address: string): boolean {
 const decodePunycode = (name: string): string => {
   try {
     // Modern browsers have punycode built into URL/domain APIs
-    if (name.startsWith('xn--')) {
+    if (name.startsWith("xn--")) {
       // Use the native browser API to decode punycode
       const url = new URL(`https://${name}.example.com`);
-      const decoded = url.hostname.split('.')[0];
+      const decoded = url.hostname.split(".")[0];
       return decoded !== name ? decoded : name;
     }
     return name;
@@ -43,7 +43,7 @@ export function usePrimaryArNSName(address: string | null) {
   useEffect(() => {
     async function fetchArNSProfile() {
       // Skip if no address or if it's a Solana wallet (no ArNS support)
-      if (!address || walletType === 'solana' || !checkValidAddress(address)) {
+      if (!address || walletType === "solana" || !checkValidAddress(address)) {
         setArnsName(null);
         setArnsLogo(null);
         return;
@@ -61,37 +61,45 @@ export function usePrimaryArNSName(address: string | null) {
       try {
         // Get primary name with longer timeout
         const ario = getARIO();
-        console.log('Fetching primary name for address:', address);
-        
+        console.log("Fetching primary name for address:", address);
+
         // Create a more generous timeout promise
         const timeoutPromise = new Promise<null>((resolve) => {
           setTimeout(() => {
-            console.log('Primary name fetch timed out after 30 seconds for:', address);
+            console.log(
+              "Primary name fetch timed out after 30 seconds for:",
+              address,
+            );
             resolve(null);
           }, 30000); // Increased to 30 second timeout
         });
 
-        const primaryNamePromise = ario.getPrimaryName({ address }).catch((error) => {
-          console.log('Primary name fetch failed:', error);
-          return null;
-        });
-        
+        const primaryNamePromise = ario
+          .getPrimaryName({ address })
+          .catch((error) => {
+            console.log("Primary name fetch failed:", error);
+            return null;
+          });
+
         const result = await Promise.race([primaryNamePromise, timeoutPromise]);
-        
+
         if (result && result.name) {
           const primaryName = result.name;
           const displayName = decodePunycode(primaryName);
           setArnsName(displayName); // Store the decoded name for display
-          
+
           // Now try to get the logo
           let logoTxId: string | null = null;
           try {
-            console.log('Fetching logo for ArNS name:', primaryName);
-            
+            console.log("Fetching logo for ArNS name:", primaryName);
+
             // Create timeout for logo fetch with much longer timeout
             const logoTimeoutPromise = new Promise<null>((resolve) => {
               setTimeout(() => {
-                console.log('Logo fetch timed out after 45 seconds for:', primaryName);
+                console.log(
+                  "Logo fetch timed out after 45 seconds for:",
+                  primaryName,
+                );
                 resolve(null);
               }, 45000); // Increased to 45 second timeout for logo
             });
@@ -99,50 +107,63 @@ export function usePrimaryArNSName(address: string | null) {
             const logoPromise = (async () => {
               try {
                 // Get the ArNS record to get the processId
-                console.log('Getting ArNS record for:', primaryName);
+                console.log("Getting ArNS record for:", primaryName);
                 const record = await ario.getArNSRecord({ name: primaryName });
-                console.log('ArNS record result:', record);
-                
+                console.log("ArNS record result:", record);
+
                 if (record && record.processId) {
-                  console.log('Initializing ANT client with processId:', record.processId);
+                  console.log(
+                    "Initializing ANT client with processId:",
+                    record.processId,
+                  );
                   // Initialize ANT client and get logo
                   const ant = getANT(record.processId);
                   const logo = await ant.getLogo();
-                  console.log('ANT logo result:', logo);
-                  
+                  console.log("ANT logo result:", logo);
+
                   const isValidLogo = logo && checkValidAddress(logo);
-                  console.log('Logo validation result:', isValidLogo, 'for logo:', logo);
-                  
+                  console.log(
+                    "Logo validation result:",
+                    isValidLogo,
+                    "for logo:",
+                    logo,
+                  );
+
                   return isValidLogo ? logo : null;
                 }
-                console.log('No processId found in ArNS record');
+                console.log("No processId found in ArNS record");
                 return null;
               } catch (innerError) {
-                console.log('Inner logo fetch error:', innerError);
+                console.log("Inner logo fetch error:", innerError);
                 return null;
               }
             })();
 
             logoTxId = await Promise.race([logoPromise, logoTimeoutPromise]);
-            console.log('Final logo txId after race:', logoTxId);
+            console.log("Final logo txId after race:", logoTxId);
           } catch (logoError) {
-            console.log('Failed to fetch ArNS logo for', primaryName, ':', logoError);
+            console.log(
+              "Failed to fetch ArNS logo for",
+              primaryName,
+              ":",
+              logoError,
+            );
           }
 
           // Set logo state
           setArnsLogo(logoTxId);
-          
+
           // Cache both name and logo
           setArNSName(address, primaryName, logoTxId || undefined);
         } else {
           setArnsName(null);
           setArnsLogo(null);
           // Cache negative result to avoid repeated API calls
-          setArNSName(address, '', undefined);
+          setArNSName(address, "", undefined);
         }
       } catch (error) {
         // If no primary name found or error, just use address
-        console.log('No ArNS primary name found for address:', address, error);
+        console.log("No ArNS primary name found for address:", address, error);
         setArnsName(null);
         setArnsLogo(null);
       } finally {
@@ -156,7 +177,7 @@ export function usePrimaryArNSName(address: string | null) {
   // Create the profile object
   const profile: ArNSProfile = {
     name: arnsName,
-    logo: arnsLogo ? getArweaveUrl(arnsLogo) : null
+    logo: arnsLogo ? getArweaveUrl(arnsLogo) : null,
   };
 
   return { arnsName, arnsLogo, profile, loading };

@@ -5,7 +5,7 @@
  * Service workers have their own memory space and cannot share state with the main thread.
  */
 
-import { nativeFetch } from './polyfills/fetch-polyfill';
+import { nativeFetch } from "./polyfills/fetch-polyfill";
 
 // Default blacklist duration: 5 minutes
 const DEFAULT_BLACKLIST_DURATION_MS = 5 * 60 * 1000;
@@ -37,7 +37,11 @@ class SwGatewayHealthCache {
   /**
    * Mark a gateway as unhealthy for the specified duration.
    */
-  markUnhealthy(gateway: string, durationMs: number = DEFAULT_BLACKLIST_DURATION_MS, error?: string): void {
+  markUnhealthy(
+    gateway: string,
+    durationMs: number = DEFAULT_BLACKLIST_DURATION_MS,
+    error?: string,
+  ): void {
     const hostname = extractHostname(gateway);
     const now = Date.now();
 
@@ -47,7 +51,9 @@ class SwGatewayHealthCache {
       error,
     });
 
-    console.log(`[SW-GatewayHealth] Marked ${hostname} as unhealthy for ${durationMs / 1000}s${error ? `: ${error}` : ''}`);
+    console.log(
+      `[SW-GatewayHealth] Marked ${hostname} as unhealthy for ${durationMs / 1000}s${error ? `: ${error}` : ""}`,
+    );
   }
 
   /**
@@ -73,7 +79,7 @@ class SwGatewayHealthCache {
    * Filter a list of gateways to only include healthy ones.
    */
   filterHealthy(gateways: string[]): string[] {
-    return gateways.filter(gateway => this.isHealthy(gateway));
+    return gateways.filter((gateway) => this.isHealthy(gateway));
   }
 
   /**
@@ -83,7 +89,9 @@ class SwGatewayHealthCache {
     const count = this.unhealthyGateways.size;
     this.unhealthyGateways.clear();
     if (count > 0) {
-      console.log(`[SW-GatewayHealth] Cleared ${count} unhealthy gateway entries`);
+      console.log(
+        `[SW-GatewayHealth] Cleared ${count} unhealthy gateway entries`,
+      );
     }
   }
 
@@ -117,7 +125,7 @@ export interface HealthCheckResult {
 export async function checkSwGatewayHealth(
   url: string,
   timeoutMs: number = HEALTH_CHECK_TIMEOUT_MS,
-  markUnhealthyOnFail: boolean = true
+  markUnhealthyOnFail: boolean = true,
 ): Promise<HealthCheckResult> {
   const startTime = Date.now();
 
@@ -126,9 +134,9 @@ export async function checkSwGatewayHealth(
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
     const response = await nativeFetch(url, {
-      method: 'HEAD',
+      method: "HEAD",
       signal: controller.signal,
-      redirect: 'manual',
+      redirect: "manual",
     });
 
     clearTimeout(timeoutId);
@@ -150,15 +158,15 @@ export async function checkSwGatewayHealth(
     let error: string;
 
     if (err instanceof Error) {
-      if (err.name === 'AbortError') {
+      if (err.name === "AbortError") {
         error = `Timeout after ${timeoutMs}ms`;
-      } else if (err.message.includes('Failed to fetch')) {
-        error = 'Gateway unreachable';
+      } else if (err.message.includes("Failed to fetch")) {
+        error = "Gateway unreachable";
       } else {
         error = err.message;
       }
     } else {
-      error = 'Unknown error';
+      error = "Unknown error";
     }
 
     if (markUnhealthyOnFail) {
@@ -173,13 +181,17 @@ export async function checkSwGatewayHealth(
  * Select a healthy gateway from a list, with health check validation.
  * Returns the first gateway that passes the health check.
  */
-export async function selectHealthyGateway(gateways: string[]): Promise<string | null> {
+export async function selectHealthyGateway(
+  gateways: string[],
+): Promise<string | null> {
   // First filter out known unhealthy gateways
   let candidates = swGatewayHealth.filterHealthy(gateways);
 
   // If all are marked unhealthy, clear cache and use all
   if (candidates.length === 0) {
-    console.log('[SW-GatewayHealth] All gateways marked unhealthy, clearing cache');
+    console.log(
+      "[SW-GatewayHealth] All gateways marked unhealthy, clearing cache",
+    );
     swGatewayHealth.clear();
     candidates = gateways;
   }
@@ -188,12 +200,16 @@ export async function selectHealthyGateway(gateways: string[]): Promise<string |
   for (const gateway of candidates) {
     const result = await checkSwGatewayHealth(gateway);
     if (result.healthy) {
-      console.log(`[SW-GatewayHealth] Selected healthy gateway: ${gateway} (${result.latencyMs}ms)`);
+      console.log(
+        `[SW-GatewayHealth] Selected healthy gateway: ${gateway} (${result.latencyMs}ms)`,
+      );
       return gateway;
     }
   }
 
   // All failed - return first gateway as last resort
-  console.log('[SW-GatewayHealth] All health checks failed, using first gateway as fallback');
+  console.log(
+    "[SW-GatewayHealth] All health checks failed, using first gateway as fallback",
+  );
   return gateways[0] || null;
 }

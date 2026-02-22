@@ -1,5 +1,5 @@
-import { useMemo } from 'react';
-import { useStore } from '../store/useStore';
+import { useMemo } from "react";
+import { useStore } from "../store/useStore";
 
 export const useTurboConfig = (tokenType?: string): any => {
   const getCurrentConfig = useStore((state) => state.getCurrentConfig);
@@ -13,7 +13,10 @@ export const useTurboConfig = (tokenType?: string): any => {
     };
 
     // If token type is provided and has a custom RPC, pass it as gatewayUrl
-    if (tokenType && config.tokenMap[tokenType as keyof typeof config.tokenMap]) {
+    if (
+      tokenType &&
+      config.tokenMap[tokenType as keyof typeof config.tokenMap]
+    ) {
       return {
         ...baseConfig,
         gatewayUrl: config.tokenMap[tokenType as keyof typeof config.tokenMap],

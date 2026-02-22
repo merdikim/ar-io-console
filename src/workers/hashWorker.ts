@@ -3,32 +3,32 @@
  * Runs SHA-256 hashing off the main thread to prevent UI blocking
  */
 
-import { createSHA256 } from 'hash-wasm';
+import { createSHA256 } from "hash-wasm";
 
 /**
  * Convert Uint8Array to base64url string (no padding)
  * Matches ar.io gateway X-AR-IO-DIGEST format
  */
 function toBase64Url(bytes: Uint8Array): string {
-  let binary = '';
+  let binary = "";
   for (let i = 0; i < bytes.length; i++) {
     binary += String.fromCharCode(bytes[i]);
   }
   const base64 = btoa(binary);
   // Convert to base64url: replace + with -, / with _, remove padding
-  return base64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 }
 
 // Message types for worker communication
 export interface HashWorkerRequest {
-  type: 'hash';
+  type: "hash";
   id: string;
   file: File;
   path: string;
 }
 
 export interface HashWorkerResponse {
-  type: 'result' | 'error' | 'progress';
+  type: "result" | "error" | "progress";
   id: string;
   path?: string;
   hash?: string;
@@ -49,7 +49,7 @@ async function ensureInitialized(): Promise<void> {
     const testHasher = await createSHA256();
     testHasher.init();
     testHasher.update(new Uint8Array([0]));
-    testHasher.digest('binary');
+    testHasher.digest("binary");
     isInitialized = true;
   }
 }
@@ -59,7 +59,7 @@ async function ensureInitialized(): Promise<void> {
  */
 async function hashFileStreaming(
   file: File,
-  onProgress?: (bytesProcessed: number, totalBytes: number) => void
+  onProgress?: (bytesProcessed: number, totalBytes: number) => void,
 ): Promise<string> {
   await ensureInitialized();
 
@@ -88,7 +88,7 @@ async function hashFileStreaming(
   }
 
   // Return base64url encoded hash (matches ar.io gateway X-AR-IO-DIGEST format)
-  const hashBytes = hasher.digest('binary');
+  const hashBytes = hasher.digest("binary");
   return toBase64Url(new Uint8Array(hashBytes));
 }
 
@@ -96,22 +96,25 @@ async function hashFileStreaming(
 self.onmessage = async (event: MessageEvent<HashWorkerRequest>) => {
   const { type, id, file, path } = event.data;
 
-  if (type === 'hash') {
+  if (type === "hash") {
     try {
-      const hash = await hashFileStreaming(file, (bytesProcessed, totalBytes) => {
-        // Send progress updates for large files
-        const response: HashWorkerResponse = {
-          type: 'progress',
-          id,
-          path,
-          bytesProcessed,
-          totalBytes,
-        };
-        self.postMessage(response);
-      });
+      const hash = await hashFileStreaming(
+        file,
+        (bytesProcessed, totalBytes) => {
+          // Send progress updates for large files
+          const response: HashWorkerResponse = {
+            type: "progress",
+            id,
+            path,
+            bytesProcessed,
+            totalBytes,
+          };
+          self.postMessage(response);
+        },
+      );
 
       const response: HashWorkerResponse = {
-        type: 'result',
+        type: "result",
         id,
         path,
         hash,
@@ -119,10 +122,10 @@ self.onmessage = async (event: MessageEvent<HashWorkerRequest>) => {
       self.postMessage(response);
     } catch (error) {
       const response: HashWorkerResponse = {
-        type: 'error',
+        type: "error",
         id,
         path,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
       self.postMessage(response);
     }
@@ -130,4 +133,4 @@ self.onmessage = async (event: MessageEvent<HashWorkerRequest>) => {
 };
 
 // Signal that worker is ready
-self.postMessage({ type: 'ready' });
+self.postMessage({ type: "ready" });

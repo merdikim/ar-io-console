@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 import {
   CheckCircle,
   XCircle,
@@ -10,8 +10,8 @@ import {
   FileText,
   Clock,
   HardDrive,
-  X
-} from 'lucide-react';
+  X,
+} from "lucide-react";
 
 export interface ActiveUpload {
   name: string;
@@ -22,7 +22,7 @@ export interface ActiveUpload {
 export interface RecentFile {
   name: string;
   size: number;
-  status: 'success' | 'error';
+  status: "success" | "error";
   error?: string;
   timestamp: number;
 }
@@ -59,18 +59,20 @@ export default function UploadProgressSummary({
   onRetryFailed,
   onCancel,
   compact = false,
-  className = ''
+  className = "",
 }: UploadProgressSummaryProps) {
   const [showErrors, setShowErrors] = useState(true);
 
   const successCount = uploadedCount - failedCount;
-  const progressPercentage = totalCount > 0 ? Math.round((uploadedCount / totalCount) * 100) : 0;
+  const progressPercentage =
+    totalCount > 0 ? Math.round((uploadedCount / totalCount) * 100) : 0;
 
   const formatSize = (bytes: number): string => {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) return "0 B";
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+    if (bytes < 1024 * 1024 * 1024)
+      return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
     return `${(bytes / 1024 / 1024 / 1024).toFixed(2)} GB`;
   };
 
@@ -100,9 +102,7 @@ export default function UploadProgressSummary({
           />
         </div>
         {failedCount > 0 && (
-          <div className="mt-2 text-xs text-error">
-            {failedCount} failed
-          </div>
+          <div className="mt-2 text-xs text-error">{failedCount} failed</div>
         )}
       </div>
     );
@@ -117,7 +117,9 @@ export default function UploadProgressSummary({
             <FileText className="w-5 h-5 text-primary" />
           </div>
           <div className="flex-1">
-            <h4 className="text-lg font-bold text-foreground mb-1">Upload Progress</h4>
+            <h4 className="text-lg font-bold text-foreground mb-1">
+              Upload Progress
+            </h4>
             <p className="text-sm text-foreground/80">
               {uploadedCount} of {totalCount} files ({progressPercentage}%)
             </p>
@@ -157,7 +159,9 @@ export default function UploadProgressSummary({
               <Clock className="w-4 h-4 text-foreground/80" />
               <span className="text-xs text-foreground/80">Remaining</span>
             </div>
-            <p className="text-lg font-bold text-foreground">{totalCount - uploadedCount}</p>
+            <p className="text-lg font-bold text-foreground">
+              {totalCount - uploadedCount}
+            </p>
           </div>
 
           <div className="bg-card/50 rounded-2xl p-3">
@@ -237,10 +241,11 @@ export default function UploadProgressSummary({
                       <span>
                         {activeUploads.length > 1
                           ? `Processing batch (${activeUploads.length} concurrent)`
-                          : `${displayFile.progress || 0}% complete`
-                        }
+                          : `${displayFile.progress || 0}% complete`}
                       </span>
-                      <span>{uploadedCount} of {totalCount} complete</span>
+                      <span>
+                        {uploadedCount} of {totalCount} complete
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -276,9 +281,7 @@ export default function UploadProgressSummary({
                     <p className="text-xs font-medium text-foreground truncate">
                       {error.fileName}
                     </p>
-                    <p className="text-xs text-error mt-1">
-                      {error.error}
-                    </p>
+                    <p className="text-xs text-error mt-1">{error.error}</p>
                   </div>
                 ))}
                 {errors.length > 10 && (
@@ -288,7 +291,7 @@ export default function UploadProgressSummary({
                 )}
               </div>
 
-              {onRetryFailed && errors.some(e => e.retryable) && (
+              {onRetryFailed && errors.some((e) => e.retryable) && (
                 <button
                   onClick={onRetryFailed}
                   className="w-full py-2 px-3 rounded-full bg-primary text-white text-sm font-medium hover:bg-primary/90 transition-colors flex items-center justify-center gap-2"
@@ -301,7 +304,6 @@ export default function UploadProgressSummary({
           )}
         </div>
       )}
-
     </div>
   );
 }

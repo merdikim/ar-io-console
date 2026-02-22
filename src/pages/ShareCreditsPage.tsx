@@ -1,4 +1,4 @@
-import ShareCreditsPanel from '../components/panels/ShareCreditsPanel';
+import ShareCreditsPanel from "../components/panels/ShareCreditsPanel";
 
 export default function ShareCreditsPage() {
   return (

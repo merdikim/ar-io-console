@@ -1,6 +1,6 @@
-import { ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { ReactNode } from "react";
+import { createPortal } from "react-dom";
+import { X } from "lucide-react";
 
 interface BaseModalProps {
   onClose: () => void;
@@ -8,35 +8,39 @@ interface BaseModalProps {
   showCloseButton?: boolean;
 }
 
-export default function BaseModal({ onClose, children, showCloseButton = false }: BaseModalProps) {
+export default function BaseModal({
+  onClose,
+  children,
+  showCloseButton = false,
+}: BaseModalProps) {
   // Portal the modal to document.body to escape all container constraints
   const modalContent = (
     <>
       {/* Modal backdrop */}
-      <div 
+      <div
         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-[9998]"
         onClick={onClose}
         style={{
-          position: 'fixed',
+          position: "fixed",
           top: 0,
           left: 0,
           right: 0,
           bottom: 0,
-          zIndex: 9998
+          zIndex: 9998,
         }}
       />
-      
+
       {/* Modal content - perfectly centered */}
       <div
         className="fixed z-[9999] bg-card border border-border/20 rounded-2xl shadow-xl overflow-hidden"
         style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
           zIndex: 9999,
-          maxWidth: '90vw',
-          maxHeight: '90vh'
+          maxWidth: "90vw",
+          maxHeight: "90vh",
         }}
       >
         {showCloseButton && (

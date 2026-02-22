@@ -16,6 +16,7 @@ npm run preview      # Preview production build
 ```
 
 **Notes:**
+
 - Uses yarn (packageManager: yarn@1.22.22) but npm works
 - Memory allocation via `cross-env NODE_OPTIONS=--max-old-space-size` (4GB dev, 8GB prod build)
 - No test framework configured
@@ -26,10 +27,13 @@ npm run preview      # Preview production build
 Before diving in, these are the most common issues:
 
 1. **Pricing hooks return strings**: `useWincForOneGiB()` returns `string | undefined`, not number:
+
    ```typescript
    const wincForOneGiB = useWincForOneGiB();
    const wincNum = wincForOneGiB ? Number(wincForOneGiB) : NaN;
-   if (Number.isFinite(wincNum) && wincNum > 0) { /* safe */ }
+   if (Number.isFinite(wincNum) && wincNum > 0) {
+     /* safe */
+   }
    ```
 
 2. **Clear signer cache on wallet switch**: Call `clearEthereumTurboClientCache()` when user disconnects or switches wallets.
@@ -49,7 +53,9 @@ Before diving in, these are the most common issues:
 ## Architecture Overview
 
 ### Application Structure
+
 ar.io Console - a unified application for uploading and accessing permanent data through the ar.io Network:
+
 - **File uploads**: Drag & drop with instant confirmation
 - **Site deployment**: Deploy static sites with ArNS domain support
 - **Credit management**: Purchase, share, and gift credits
@@ -57,6 +63,7 @@ ar.io Console - a unified application for uploading and accessing permanent data
 - **Browse**: View permaweb content with optional cryptographic verification via Wayfinder
 
 ### Key Directories
+
 ```text
 src/
 ├── components/
@@ -81,12 +88,14 @@ src/
 The Browse feature allows users to view permaweb content with optional cryptographic verification.
 
 **Key files:**
+
 - `src/features/browse/components/BrowsePanel.tsx` - Main browse UI
 - `src/features/browse/components/BrowseSearchBar.tsx` - ArNS/TX ID input
 - `src/features/browse/service-worker/service-worker.ts` - SW for content interception
 - `src/features/browse/service-worker/wayfinder-instance.ts` - Wayfinder SDK integration
 
 **How it works:**
+
 1. User enters ArNS name or transaction ID
 2. Service worker intercepts requests and routes through ar.io gateways
 3. When verification is enabled, Wayfinder validates content signatures
@@ -98,11 +107,11 @@ The Browse feature allows users to view permaweb content with optional cryptogra
 
 **Three wallet ecosystems:**
 
-| Wallet | Signer | Notes |
-|--------|--------|-------|
-| Arweave (Wander) | `ArconnectSigner` via `window.arweaveWallet` | Required for ArNS updates |
-| Ethereum (all) | `InjectedEthereumSigner` from `@ar.io/sdk/web` | Supports MetaMask, RainbowKit, WalletConnect, Coinbase |
-| Solana (Phantom/Solflare) | Custom `SolanaWalletAdapter` | Uses `window.solana` |
+| Wallet                    | Signer                                         | Notes                                                  |
+| ------------------------- | ---------------------------------------------- | ------------------------------------------------------ |
+| Arweave (Wander)          | `ArconnectSigner` via `window.arweaveWallet`   | Required for ArNS updates                              |
+| Ethereum (all)            | `InjectedEthereumSigner` from `@ar.io/sdk/web` | Supports MetaMask, RainbowKit, WalletConnect, Coinbase |
+| Solana (Phantom/Solflare) | Custom `SolanaWalletAdapter`                   | Uses `window.solana`                                   |
 
 **Email Auth (Privy):** Creates embedded Ethereum wallet via `@privy-io/react-auth`
 
@@ -113,6 +122,7 @@ The Browse feature allows users to view permaweb content with optional cryptogra
 ### State Management (Zustand)
 
 **Persistent state** (localStorage via `partialize`):
+
 - `address`, `walletType`, `arnsNamesCache`, `ownedArnsCache`
 - `uploadHistory`, `deployHistory`, `uploadStatusCache`
 - `configMode`, `customConfig`, `x402OnlyMode`
@@ -120,6 +130,7 @@ The Browse feature allows users to view permaweb content with optional cryptogra
 - Smart Deploy (`smartDeployEnabled`, `fileHashCache`) - deduplication via content hashing
 
 **Ephemeral state:**
+
 - `creditBalance`, payment flow state, UI state
 
 **Cache expiry:** ArNS names (24h), owned names (6h), upload status (1h confirmed, 24h finalized)
@@ -127,6 +138,7 @@ The Browse feature allows users to view permaweb content with optional cryptogra
 ### Configuration System
 
 Three modes via `configMode` in store:
+
 - **production**: Mainnet endpoints, production Stripe key
 - **development**: Testnet/devnet endpoints, test Stripe key
 - **custom**: User-defined for testing
@@ -150,31 +162,40 @@ Different wallet types require different client instantiation:
 
 ```typescript
 // Arweave wallet
-import { TurboFactory, ArconnectSigner } from '@ardrive/turbo-sdk/web';
+import { TurboFactory, ArconnectSigner } from "@ardrive/turbo-sdk/web";
 const signer = new ArconnectSigner(window.arweaveWallet);
 const turbo = TurboFactory.authenticated({ signer, ...turboConfig });
 
 // Ethereum wallet (PREFERRED: use the hook for automatic caching + network switching)
-import { useEthereumTurboClient } from '../hooks/useEthereumTurboClient';
+import { useEthereumTurboClient } from "../hooks/useEthereumTurboClient";
 const { createEthereumTurboClient } = useEthereumTurboClient();
-const turbo = await createEthereumTurboClient('base-ario'); // or 'base-eth', 'base-usdc', etc.
+const turbo = await createEthereumTurboClient("base-ario"); // or 'base-eth', 'base-usdc', etc.
 
 // Solana wallet
-import { TurboFactory } from '@ardrive/turbo-sdk/web';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { TurboFactory } from "@ardrive/turbo-sdk/web";
+import { useWallet } from "@solana/wallet-adapter-react";
 const { publicKey, signMessage } = useWallet();
 // Create adapter that implements TurboWalletSigner interface
 const solanaAdapter = {
   publicKey,
   signMessage: async (message: Uint8Array) => signMessage!(message),
 };
-const turbo = TurboFactory.authenticated({ signer: solanaAdapter, token: 'solana', ...turboConfig });
+const turbo = TurboFactory.authenticated({
+  signer: solanaAdapter,
+  token: "solana",
+  ...turboConfig,
+});
 
 // Manual Ethereum client (for non-hook contexts - prefer the hook above)
-import { InjectedEthereumSigner } from '@ar.io/sdk/web';
-import { getConnectorClient } from 'wagmi/actions';
-const connectorClient = await getConnectorClient(wagmiConfig, { connector: ethAccount.connector });
-const ethersProvider = new ethers.BrowserProvider(connectorClient.transport, 'any');
+import { InjectedEthereumSigner } from "@ar.io/sdk/web";
+import { getConnectorClient } from "wagmi/actions";
+const connectorClient = await getConnectorClient(wagmiConfig, {
+  connector: ethAccount.connector,
+});
+const ethersProvider = new ethers.BrowserProvider(
+  connectorClient.transport,
+  "any",
+);
 const ethersSigner = await ethersProvider.getSigner();
 const userAddress = await ethersSigner.getAddress();
 // InjectedEthereumSigner expects a provider with getSigner() returning signMessage/getAddress
@@ -186,7 +207,11 @@ const injectedProvider = {
 };
 const injectedSigner = new InjectedEthereumSigner(injectedProvider as any);
 await injectedSigner.setPublicKey(); // Requests signature
-const turbo = TurboFactory.authenticated({ signer: injectedSigner, token: 'base-eth', ...turboConfig });
+const turbo = TurboFactory.authenticated({
+  signer: injectedSigner,
+  token: "base-eth",
+  ...turboConfig,
+});
 ```
 
 ## Upload Tagging System
@@ -194,11 +219,13 @@ const turbo = TurboFactory.authenticated({ signer: injectedSigner, token: 'base-
 All uploads include standardized metadata tags:
 
 **Deployment tool tags (always included):**
+
 - `Deployed-By`: 'ar.io Console' (from `APP_NAME` constant) - identifies the deployment tool
 - `Deployed-By-Version`: Dynamic from package.json - version of the deployment tool
 - `App-Feature`: 'File Upload' | 'Deploy Site' | 'Capture'
 
 **User app tags (optional, for site deployments):**
+
 - `App-Name`: User-provided app/site name
 - `App-Version`: User-provided app version
 
@@ -209,22 +236,26 @@ All uploads include standardized metadata tags:
 The app supports three upload modes with different payment strategies:
 
 **1. Pre-funded Credits (Traditional)**
+
 - User buys credits via fiat or crypto first
 - Upload deducts from credit balance
 - Works with all wallet types
 
 **2. JIT (Just-In-Time) Payments**
+
 - No pre-purchase required; crypto sent at upload time
 - Uses `fundAndUpload()` from Turbo SDK
 - Supported tokens: `ario`, `base-ario`, `solana`, `base-eth`, `base-usdc`
 - Configurable via store: `jitPaymentEnabled`, `jitMaxTokenAmount`, `jitBufferMultiplier`
 
 **3. X402 Protocol (Base USDC)**
+
 - Pay-per-upload via HTTP 402 payment flow
 - Only works with Ethereum wallets on Base network
 - Used when `x402OnlyMode` is enabled or connecting to x402-only bundlers
 
 **Upload Flow Decision Tree:**
+
 ```
 1. Check if file is free (under bundler's free limit)
    → Yes: Upload without payment
@@ -242,11 +273,13 @@ The app supports three upload modes with different payment strategies:
 Enables uploads without pre-purchased credits via Base network USDC. Used when connecting to ar.io bundlers that only support x402.
 
 **Key files:**
+
 - `useX402Upload.ts`: Protocol upload hook
 - `useX402Pricing.ts`: USDC cost calculation
 - `useEthereumTurboClient.ts`: Creates authenticated Turbo client for Ethereum wallets
 
 **Config** (`X402_CONFIG` in constants.ts):
+
 - Production: Base Mainnet (chainId 8453)
 - Development: Base Sepolia (chainId 84532)
 
@@ -256,24 +289,24 @@ Enables uploads without pre-purchased credits via Base network USDC. Used when c
 
 Network-specific settings in `constants.ts`:
 
-| Config | Production ChainId | Development ChainId | Token Contract |
-|--------|-------------------|---------------------|----------------|
-| `X402_CONFIG` | 8453 (Base) | 84532 (Base Sepolia) | USDC on Base |
-| `BASE_ARIO_CONFIG` | 8453 (Base) | 84532 (Base Sepolia) | ARIO bridged to Base |
-| `ETHEREUM_CONFIG` | 1 (Mainnet) | 11155111 (Sepolia) | USDC on Ethereum |
-| `POLYGON_CONFIG` | 137 (Polygon) | 80002 (Amoy) | USDC on Polygon |
+| Config             | Production ChainId | Development ChainId  | Token Contract       |
+| ------------------ | ------------------ | -------------------- | -------------------- |
+| `X402_CONFIG`      | 8453 (Base)        | 84532 (Base Sepolia) | USDC on Base         |
+| `BASE_ARIO_CONFIG` | 8453 (Base)        | 84532 (Base Sepolia) | ARIO bridged to Base |
+| `ETHEREUM_CONFIG`  | 1 (Mainnet)        | 11155111 (Sepolia)   | USDC on Ethereum     |
+| `POLYGON_CONFIG`   | 137 (Polygon)      | 80002 (Amoy)         | USDC on Polygon      |
 
 ## Wallet Capability Matrix
 
-| Feature | Arweave | Ethereum/Base/Polygon | Solana |
-|---------|---------|----------------------|--------|
-| Buy Credits (Fiat) | ✅ | ✅ | ✅ |
-| Buy Credits (Crypto) | ✅ AR/ARIO | ✅ ETH/Base-ETH/Base-ARIO/POL/USDC | ✅ SOL |
-| Upload/Deploy/Capture | ✅ | ✅ | ✅ |
-| Share Credits | ✅ | ✅ | ✅ |
-| Update ArNS Records | ✅ | ❌ | ❌ |
-| JIT Payments | ✅ ARIO | ✅ Base-ARIO, Base-ETH, Base-USDC | ✅ SOL |
-| X402 USDC Uploads | ❌ | ✅ (Base only) | ❌ |
+| Feature               | Arweave    | Ethereum/Base/Polygon              | Solana |
+| --------------------- | ---------- | ---------------------------------- | ------ |
+| Buy Credits (Fiat)    | ✅         | ✅                                 | ✅     |
+| Buy Credits (Crypto)  | ✅ AR/ARIO | ✅ ETH/Base-ETH/Base-ARIO/POL/USDC | ✅ SOL |
+| Upload/Deploy/Capture | ✅         | ✅                                 | ✅     |
+| Share Credits         | ✅         | ✅                                 | ✅     |
+| Update ArNS Records   | ✅         | ❌                                 | ❌     |
+| JIT Payments          | ✅ ARIO    | ✅ Base-ARIO, Base-ETH, Base-USDC  | ✅ SOL |
+| X402 USDC Uploads     | ❌         | ✅ (Base only)                     | ❌     |
 
 ## Environment Variables
 
@@ -290,13 +323,13 @@ Service URLs managed by store's configuration system, overridable via Developer 
 
 ### ar.io Brand Colors (Light Mode)
 
-| Color | Hex | CSS Variable | Usage |
-|-------|-----|--------------|-------|
-| Primary | #5427C8 | `--color-primary` | CTAs, links, accents |
-| Lavender | #DFD6F7 | `--color-lavender` | Gradients, backgrounds, footer |
-| Black | #23232D | `--color-foreground` | Primary text, dark elements |
-| White | #FFFFFF | `--color-background` | Page background |
-| Card Surface | #F0F0F0 | `--color-card` | Card backgrounds |
+| Color        | Hex     | CSS Variable         | Usage                          |
+| ------------ | ------- | -------------------- | ------------------------------ |
+| Primary      | #5427C8 | `--color-primary`    | CTAs, links, accents           |
+| Lavender     | #DFD6F7 | `--color-lavender`   | Gradients, backgrounds, footer |
+| Black        | #23232D | `--color-foreground` | Primary text, dark elements    |
+| White        | #FFFFFF | `--color-background` | Page background                |
+| Card Surface | #F0F0F0 | `--color-card`       | Card backgrounds               |
 
 ### Typography
 
@@ -313,19 +346,23 @@ Service URLs managed by store's configuration system, overridable via Developer 
 ## Common Patterns
 
 ### Service Panel Header
+
 ```jsx
 <div className="flex items-start gap-3 mb-6">
   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-card">
     <Icon className="h-5 w-5 text-foreground" />
   </div>
   <div>
-    <h3 className="font-heading text-2xl font-extrabold text-foreground mb-1">[Name]</h3>
+    <h3 className="font-heading text-2xl font-extrabold text-foreground mb-1">
+      [Name]
+    </h3>
     <p className="text-sm text-foreground/80">[Description]</p>
   </div>
 </div>
 ```
 
 ### Card Component
+
 ```jsx
 <div className="rounded-2xl border border-border/20 bg-card p-6 shadow-sm">
   {/* Card content */}
@@ -333,6 +370,7 @@ Service URLs managed by store's configuration system, overridable via Developer 
 ```
 
 ### Primary Button
+
 ```jsx
 <button className="inline-flex items-center gap-2 bg-foreground text-white px-5 py-2.5 rounded-full font-semibold hover:opacity-90 transition-opacity">
   Button Text
@@ -340,9 +378,10 @@ Service URLs managed by store's configuration system, overridable via Developer 
 ```
 
 ### Privy Wallet Detection
+
 ```typescript
 const { wallets } = useWallets();
-const privyWallet = wallets.find(w => w.walletClientType === 'privy');
+const privyWallet = wallets.find((w) => w.walletClientType === "privy");
 if (privyWallet) {
   const provider = await privyWallet.getEthereumProvider();
   // Use provider for Turbo client
@@ -366,9 +405,23 @@ if (privyWallet) {
 ## Routes
 
 ```typescript
-'/', '/topup', '/upload', '/capture', '/deploy', '/deployments', '/share', '/gift',
-'/account', '/domains', '/calculator', '/services-calculator', '/balances', '/redeem',
-'/settings', '/try', '/browse'
+("/",
+  "/topup",
+  "/upload",
+  "/capture",
+  "/deploy",
+  "/deployments",
+  "/share",
+  "/gift",
+  "/account",
+  "/domains",
+  "/calculator",
+  "/services-calculator",
+  "/balances",
+  "/redeem",
+  "/settings",
+  "/try",
+  "/browse");
 ```
 
 URL params: `?payment=success`, `?payment=cancelled` (handled by PaymentCallbackHandler in App.tsx)
@@ -381,18 +434,21 @@ URL params: `?payment=success`, `?payment=cancelled` (handled by PaymentCallback
 ## Important Hooks
 
 **Core Hooks:**
+
 - `useTurboConfig(tokenType?)` - Get Turbo SDK config for current mode
 - `useEthereumTurboClient()` - Create authenticated Turbo client for ETH wallets (with caching + network switching)
 - `useTurboWallets()` - Unified wallet detection across Arweave/Ethereum/Solana
 - `useWalletAccountListener()` - Listens for wallet changes, clears caches on switch
 
 **Upload Hooks:**
+
 - `useFileUpload()` - Multi-chain file upload logic
 - `useFolderUpload()` - Folder upload with manifest generation
 - `useX402Upload()` - X402 protocol uploads
 - `useFreeUploadLimit()` - Fetch bundler's free upload limit
 
 **Pricing Hooks:**
+
 - `useWincForOneGiB()` - Storage pricing (returns `string | undefined`!)
 - `useCreditsForFiat(usdAmount, address)` - USD → credits conversion
 - `useCreditsForCrypto(tokenType, amount, address)` - Crypto → credits conversion
@@ -401,23 +457,27 @@ URL params: `?payment=success`, `?payment=cancelled` (handled by PaymentCallback
 - `useCryptoPrice(tokenType)` - Current USD price for a token
 
 **ArNS Hooks:**
+
 - `usePrimaryArNSName(address)` - Fetch primary ArNS name
 - `useOwnedArNSNames(address)` - Fetch all owned ArNS names
 
 ## Important Utilities
 
 **JIT Payment Utils** (`utils/jitPayment.ts`):
+
 - `supportsJitPayment(tokenType)` - Check if token supports JIT payments
 - `calculateRequiredTokenAmount()` - Calculate crypto needed for credits
 - `formatTokenAmount()` / `fromSmallestUnit()` - Token amount formatting
 
 **Other:**
+
 - `clearEthereumTurboClientCache()` (`hooks/useEthereumTurboClient.ts`) - Clear cached signers/clients
 - `isFileFree()` / `formatFreeLimit()` (`hooks/useFreeUploadLimit.ts`) - Free upload limit checks
 
 ## External Links in Navigation
 
 The header navigation includes external links to the ar.io ecosystem:
+
 - **Developer Docs**: [docs.ar.io](https://docs.ar.io)
 - **Network Explorer**: [scan.ar.io](https://scan.ar.io)
 - **Gateway Dashboard**: [gateways.ar.io](https://gateways.ar.io)

@@ -1,25 +1,28 @@
-import { TurboWincForFiatResponse, USD } from '@ardrive/turbo-sdk/web';
-import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { StripeCardElementOptions } from '@stripe/stripe-js';
-import { FC, useCallback, useEffect, useState } from 'react';
-import { isEmail } from 'validator';
-import { CircleX, RefreshCw, CreditCard, Users } from 'lucide-react';
-import { useStore } from '../../../store/useStore';
-import { useTheme } from '../../../hooks/useTheme';
-import useCountries from '../../../hooks/useCountries';
-import { useWincForOneGiB } from '../../../hooks/useWincForOneGiB';
-import { getPaymentIntent, getWincForFiat } from '../../../services/paymentService';
-import FormEntry from '../../FormEntry';
-import { wincPerCredit } from '../../../constants';
-import { getWalletTypeLabel } from '../../../utils/addressValidation';
-import CopyButton from '../../CopyButton';
+import { TurboWincForFiatResponse, USD } from "@ardrive/turbo-sdk/web";
+import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { StripeCardElementOptions } from "@stripe/stripe-js";
+import { FC, useCallback, useEffect, useState } from "react";
+import { isEmail } from "validator";
+import { CircleX, RefreshCw, CreditCard, Users } from "lucide-react";
+import { useStore } from "../../../store/useStore";
+import { useTheme } from "../../../hooks/useTheme";
+import useCountries from "../../../hooks/useCountries";
+import { useWincForOneGiB } from "../../../hooks/useWincForOneGiB";
+import {
+  getPaymentIntent,
+  getWincForFiat,
+} from "../../../services/paymentService";
+import FormEntry from "../../FormEntry";
+import { wincPerCredit } from "../../../constants";
+import { getWalletTypeLabel } from "../../../utils/addressValidation";
+import CopyButton from "../../CopyButton";
 
 interface PaymentDetailsPanelProps {
   usdAmount: number;
   onBack: () => void;
   onNext: () => void;
   targetAddress: string; // NEW - address receiving credits
-  targetWalletType: 'arweave' | 'ethereum' | 'solana'; // NEW - type of target wallet
+  targetWalletType: "arweave" | "ethereum" | "solana"; // NEW - type of target wallet
 }
 
 const isValidPromoCode = async (
@@ -39,44 +42,47 @@ const isValidPromoCode = async (
   }
 };
 
-const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, onNext, targetAddress, targetWalletType }) => {
+const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({
+  usdAmount,
+  onBack,
+  onNext,
+  targetAddress,
+  targetWalletType,
+}) => {
   const countries = useCountries();
   const wincForOneGiB = useWincForOneGiB();
   const { address } = useStore();
   const { isLight } = useTheme();
 
-  const {
-    setPaymentIntent,
-    setPaymentInformation,
-    promoCode,
-    setPromoCode,
-  } = useStore();
+  const { setPaymentIntent, setPaymentInformation, promoCode, setPromoCode } =
+    useStore();
 
-  const [localPromoCode, setLocalPromoCode] = useState<string>('');
-  const [promoCodeError, setPromoCodeError] = useState<string>('');
+  const [localPromoCode, setLocalPromoCode] = useState<string>("");
+  const [promoCodeError, setPromoCodeError] = useState<string>("");
 
   const stripe = useStripe();
   const elements = useElements();
 
-  const [estimatedCredits, setEstimatedCredits] = useState<TurboWincForFiatResponse>();
+  const [estimatedCredits, setEstimatedCredits] =
+    useState<TurboWincForFiatResponse>();
 
-  const [name, setName] = useState<string>('');
-  const [country, setCountry] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  const [name, setName] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [keepMeUpdated, setKeepMeUpdated] = useState<boolean>(false);
 
-  const [nameError, setNameError] = useState<string>('');
-  const [cardError, setCardError] = useState<string>('');
-  const [countryError, setCountryError] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
+  const [nameError, setNameError] = useState<string>("");
+  const [cardError, setCardError] = useState<string>("");
+  const [countryError, setCountryError] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
 
   const [countdown, setCountdown] = useState<number>(5 * 60);
-  const [paymentMethodError, setPaymentMethodError] = useState<string>('');
+  const [paymentMethodError, setPaymentMethodError] = useState<string>("");
 
   const formatCountdown = (countdown: number) => {
     const minutes = Math.floor(countdown / 60);
     const seconds = countdown % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   const updateEstimatedCredits = useCallback(async () => {
@@ -117,18 +123,18 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
   const isValid =
     name.trim().length > 0 &&
     estimatedCredits &&
-    cardError === '' &&
+    cardError === "" &&
     country.trim().length > 0 &&
     (!email || isEmail(email));
 
   const cardElementOptions: StripeCardElementOptions = {
     style: {
       base: {
-        color: isLight ? '#23232D' : '#ededed', // text-foreground (theme-aware)
-        fontSize: '16px',
+        color: isLight ? "#23232D" : "#ededed", // text-foreground (theme-aware)
+        fontSize: "16px",
         fontFamily: '"Plus Jakarta Sans", system-ui, sans-serif',
-        '::placeholder': {
-          color: isLight ? '#6C6C87' : '#A3A3AD', // text-foreground/80 (theme-aware)
+        "::placeholder": {
+          color: isLight ? "#6C6C87" : "#A3A3AD", // text-foreground/80 (theme-aware)
         },
       },
     },
@@ -137,7 +143,7 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
 
   const actualPaymentAmount = estimatedCredits
     ? (estimatedCredits.actualPaymentAmount / 100).toFixed(2)
-    : '0';
+    : "0";
 
   // Smart storage display - show in appropriate units
   const formatStorage = (gigabytes: number): string => {
@@ -150,13 +156,14 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
       const kibibytes = gigabytes * 1024 * 1024;
       return `${kibibytes.toFixed(0)} KiB`;
     } else {
-      return '0 storage';
+      return "0 storage";
     }
   };
 
-  const storageAmount = estimatedCredits && wincForOneGiB
-    ? (Number(estimatedCredits.winc) / Number(wincForOneGiB))
-    : 0;
+  const storageAmount =
+    estimatedCredits && wincForOneGiB
+      ? Number(estimatedCredits.winc) / Number(wincForOneGiB)
+      : 0;
 
   const adjustment =
     estimatedCredits?.adjustments && estimatedCredits.adjustments.length > 0
@@ -172,7 +179,7 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
 
     if (name && country && cardElement && stripe) {
       const { paymentMethod, error } = await stripe.createPaymentMethod({
-        type: 'card',
+        type: "card",
         card: cardElement,
         billing_details: {
           name,
@@ -182,7 +189,9 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
 
       if (error) {
         console.error(error);
-        setPaymentMethodError(error.message || 'Payment method creation failed');
+        setPaymentMethodError(
+          error.message || "Payment method creation failed",
+        );
       } else if (paymentMethod) {
         setPaymentInformation({
           paymentMethodId: paymentMethod.id,
@@ -201,20 +210,25 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
           <CreditCard className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">Payment Details</h3>
-          <p className="text-sm text-foreground/80">We do not save credit card information. See our T&C for more info.</p>
+          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">
+            Payment Details
+          </h3>
+          <p className="text-sm text-foreground/80">
+            We do not save credit card information. See our T&C for more info.
+          </p>
         </div>
       </div>
 
       {/* Main Content Container with Gradient */}
       <div className="bg-card rounded-2xl border border-border/20 p-4 sm:p-6 mb-4 sm:mb-6">
-
         {/* Show recipient info if funding another wallet */}
         {targetAddress && targetAddress !== address && (
           <div className="mb-6 bg-info/10 border border-info/20 rounded-2xl p-4">
             <div className="flex items-center gap-2 text-info mb-2">
               <Users className="w-4 h-4" />
-              <span className="font-medium text-sm">Credits will be delivered to:</span>
+              <span className="font-medium text-sm">
+                Credits will be delivered to:
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <code className="text-sm text-info font-mono break-all flex-1 p-2 bg-card/50 rounded">
@@ -233,10 +247,13 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
           {estimatedCredits ? (
             <div className="flex flex-col">
               <div className="text-2xl font-bold text-foreground">
-                {((Number(estimatedCredits?.winc ?? 0)) / wincPerCredit).toFixed(4)} Credits
+                {(Number(estimatedCredits?.winc ?? 0) / wincPerCredit).toFixed(
+                  4,
+                )}{" "}
+                Credits
               </div>
               <div className="text-sm text-foreground/80">
-                ${actualPaymentAmount}{' '}
+                ${actualPaymentAmount}{" "}
                 {discountAmount && (
                   <span className="text-foreground/80">{discountAmount}</span>
                 )}
@@ -254,7 +271,7 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
           )}
           <div className="flex flex-col items-center bg-card px-6 py-3 text-center text-sm text-foreground/80 rounded-2xl">
             <div>
-              Quote Updates in{' '}
+              Quote Updates in{" "}
               <span className="text-foreground">
                 {formatCountdown(countdown)}
               </span>
@@ -280,12 +297,10 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
               name="name"
               value={name}
               onChange={(e) => {
-                const v = e.target.value ?? '';
-                const cleaned = v.replace(/[^a-zA-Z\s]/g, '');
+                const v = e.target.value ?? "";
+                const cleaned = v.replace(/[^a-zA-Z\s]/g, "");
                 setName(cleaned);
-                setNameError(
-                  cleaned.length === 0 ? 'Name is required' : '',
-                );
+                setNameError(cleaned.length === 0 ? "Name is required" : "");
               }}
             />
           </FormEntry>
@@ -295,7 +310,7 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
               options={cardElementOptions}
               className="w-full bg-card border border-border/20 px-4 py-3 text-foreground rounded-2xl"
               onChange={(e) => {
-                setCardError(e.error?.message || '');
+                setCardError(e.error?.message || "");
               }}
             />
           </FormEntry>
@@ -306,9 +321,7 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
               value={country}
               onChange={(e) => {
                 setCountry(e.target.value);
-                setCountryError(
-                  !e.target.value ? 'Country is required' : '',
-                );
+                setCountryError(!e.target.value ? "Country is required" : "");
               }}
             >
               <option value="">Select Country</option>
@@ -338,16 +351,21 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
                         const newPaymentIntent = await getPaymentIntent(
                           targetAddress,
                           usdAmount * 100,
-                          targetWalletType === 'ethereum' ? 'ethereum' :
-                          targetWalletType === 'solana' ? 'solana' : 'arweave',
+                          targetWalletType === "ethereum"
+                            ? "ethereum"
+                            : targetWalletType === "solana"
+                              ? "solana"
+                              : "arweave",
                         );
                         setPaymentIntent(newPaymentIntent.paymentSession);
                         setPromoCode(undefined);
-                        setLocalPromoCode('');
-                        setPromoCodeError('');
+                        setLocalPromoCode("");
+                        setPromoCodeError("");
                       } catch (e: unknown) {
                         console.error(e);
-                        setPromoCodeError('Error removing promo code, please try again.');
+                        setPromoCodeError(
+                          "Error removing promo code, please try again.",
+                        );
                       }
                     }
                   }}
@@ -360,7 +378,11 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
               )}
             </div>
           ) : (
-            <FormEntry name="promoCode" label="Promo Code" errorText={promoCodeError}>
+            <FormEntry
+              name="promoCode"
+              label="Promo Code"
+              errorText={promoCodeError}
+            >
               <div className="relative">
                 <input
                   className="peer w-full bg-card border border-border/20 px-4 py-3 pr-16 text-foreground rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -368,10 +390,10 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
                   name="promoCode"
                   value={localPromoCode}
                   onChange={(e) => {
-                    const v = e.target.value ?? '';
-                    const cleaned = v.replace(/[^a-zA-Z0-9\s]/g, '');
+                    const v = e.target.value ?? "";
+                    const cleaned = v.replace(/[^a-zA-Z0-9\s]/g, "");
                     setLocalPromoCode(cleaned);
-                    setPromoCodeError('');
+                    setPromoCodeError("");
                   }}
                 />
                 <button
@@ -379,25 +401,40 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
                   onClick={async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-                    if (targetAddress && localPromoCode && localPromoCode.length > 0) {
-                      if (await isValidPromoCode(usdAmount * 100, localPromoCode, targetAddress)) {
+                    if (
+                      targetAddress &&
+                      localPromoCode &&
+                      localPromoCode.length > 0
+                    ) {
+                      if (
+                        await isValidPromoCode(
+                          usdAmount * 100,
+                          localPromoCode,
+                          targetAddress,
+                        )
+                      ) {
                         try {
                           const newPaymentIntent = await getPaymentIntent(
                             targetAddress,
                             usdAmount * 100,
-                            targetWalletType === 'ethereum' ? 'ethereum' :
-                            targetWalletType === 'solana' ? 'solana' : 'arweave',
+                            targetWalletType === "ethereum"
+                              ? "ethereum"
+                              : targetWalletType === "solana"
+                                ? "solana"
+                                : "arweave",
                             localPromoCode,
                           );
                           setPaymentIntent(newPaymentIntent.paymentSession);
                           setPromoCode(localPromoCode);
                         } catch (e: unknown) {
                           console.error(e);
-                          setPromoCodeError('Error applying promo code, please try again.');
+                          setPromoCodeError(
+                            "Error applying promo code, please try again.",
+                          );
                         }
                       } else {
-                        setLocalPromoCode('');
-                        setPromoCodeError('Promo code is invalid or expired.');
+                        setLocalPromoCode("");
+                        setPromoCodeError("Promo code is invalid or expired.");
                       }
                     }
                   }}
@@ -409,7 +446,11 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
           )}
 
           {/* Email Section */}
-          <FormEntry name="email" label="Email (optional - for receipt)" errorText={emailError}>
+          <FormEntry
+            name="email"
+            label="Email (optional - for receipt)"
+            errorText={emailError}
+          >
             <input
               type="email"
               className="w-full bg-card border border-border/20 px-4 py-3 text-foreground rounded-2xl focus:outline-none focus:ring-2 focus:ring-primary/50"
@@ -420,8 +461,8 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
                 setEmail(newEmail);
                 setEmailError(
                   newEmail.length === 0 || isEmail(newEmail)
-                    ? ''
-                    : 'Please enter a valid email address.',
+                    ? ""
+                    : "Please enter a valid email address.",
                 );
               }}
             />
@@ -437,7 +478,10 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
                 checked={keepMeUpdated}
                 onChange={(e) => setKeepMeUpdated(e.target.checked)}
               />
-              <label className="text-sm text-foreground/80" htmlFor="keepMeUpdatedCheckbox">
+              <label
+                className="text-sm text-foreground/80"
+                htmlFor="keepMeUpdatedCheckbox"
+              >
                 Keep me up to date on news and promotions.
               </label>
             </div>
@@ -446,9 +490,7 @@ const PaymentDetailsPanel: FC<PaymentDetailsPanelProps> = ({ usdAmount, onBack, 
 
         {/* Error Message */}
         {paymentMethodError && (
-          <div className="mt-4 text-sm text-error">
-            {paymentMethodError}
-          </div>
+          <div className="mt-4 text-sm text-error">{paymentMethodError}</div>
         )}
 
         {/* Action Buttons */}

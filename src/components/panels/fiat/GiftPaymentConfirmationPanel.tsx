@@ -1,7 +1,15 @@
-import { FC, useState } from 'react';
-import { useStripe } from '@stripe/react-stripe-js';
-import { ArrowLeft, Gift, Mail, MessageSquare, Loader2, CheckCircle, XCircle } from 'lucide-react';
-import { useStore } from '../../../store/useStore';
+import { FC, useState } from "react";
+import { useStripe } from "@stripe/react-stripe-js";
+import {
+  ArrowLeft,
+  Gift,
+  Mail,
+  MessageSquare,
+  Loader2,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
+import { useStore } from "../../../store/useStore";
 
 interface GiftPaymentConfirmationPanelProps {
   usdAmount: number;
@@ -23,16 +31,16 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
   const stripe = useStripe();
   const { paymentInformation } = useStore();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
   const handleConfirmPayment = async () => {
     if (!stripe || !paymentIntent || !paymentInformation?.paymentMethodId) {
-      setError('Payment system not ready. Please try again.');
+      setError("Payment system not ready. Please try again.");
       return;
     }
 
     setIsProcessing(true);
-    setError('');
+    setError("");
 
     try {
       // Confirm the payment intent using stored payment method
@@ -41,18 +49,18 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
         {
           payment_method: paymentInformation.paymentMethodId,
           receipt_email: paymentInformation.email,
-        }
+        },
       );
 
       if (stripeError) {
-        setError(stripeError.message || 'Payment failed');
+        setError(stripeError.message || "Payment failed");
         return;
       }
 
       // Payment successful
       onSuccess();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Payment failed');
+      setError(err instanceof Error ? err.message : "Payment failed");
     } finally {
       setIsProcessing(false);
     }
@@ -66,7 +74,9 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
           <Gift className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">Confirm Gift Payment</h3>
+          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">
+            Confirm Gift Payment
+          </h3>
           <p className="text-sm text-foreground/80">
             Review your gift details and complete the payment
           </p>
@@ -75,7 +85,6 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
 
       {/* Main Content */}
       <div className="bg-gradient-to-br from-primary/5 to-primary/3 rounded-2xl border border-border/20 p-4 sm:p-6 mb-4 sm:mb-6">
-
         {/* Gift Details */}
         <div className="bg-card rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6">
           <h4 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
@@ -88,7 +97,9 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
               <Mail className="w-5 h-5 text-primary" />
               <div>
                 <div className="text-xs text-foreground/80">Recipient</div>
-                <div className="font-medium text-foreground">{recipientEmail}</div>
+                <div className="font-medium text-foreground">
+                  {recipientEmail}
+                </div>
               </div>
             </div>
 
@@ -96,7 +107,9 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
               <Gift className="w-5 h-5 text-primary" />
               <div>
                 <div className="text-xs text-foreground/80">Amount</div>
-                <div className="font-bold text-foreground text-lg">${usdAmount.toFixed(2)} USD</div>
+                <div className="font-bold text-foreground text-lg">
+                  ${usdAmount.toFixed(2)} USD
+                </div>
               </div>
             </div>
 
@@ -105,7 +118,9 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
                 <MessageSquare className="w-5 h-5 text-primary mt-0.5" />
                 <div>
                   <div className="text-xs text-foreground/80">Your Message</div>
-                  <div className="font-medium text-foreground italic">"{giftMessage}"</div>
+                  <div className="font-medium text-foreground italic">
+                    "{giftMessage}"
+                  </div>
                 </div>
               </div>
             )}
@@ -114,10 +129,14 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
 
         {/* Payment Summary */}
         <div className="bg-card rounded-2xl p-4 mb-6">
-          <h4 className="font-heading font-bold text-foreground mb-3">Payment Summary</h4>
+          <h4 className="font-heading font-bold text-foreground mb-3">
+            Payment Summary
+          </h4>
           <div className="flex justify-between items-center">
             <span className="text-foreground/80">Total Amount:</span>
-            <span className="font-bold text-foreground text-xl">${usdAmount.toFixed(2)} USD</span>
+            <span className="font-bold text-foreground text-xl">
+              ${usdAmount.toFixed(2)} USD
+            </span>
           </div>
         </div>
 
@@ -134,7 +153,7 @@ const GiftPaymentConfirmationPanel: FC<GiftPaymentConfirmationPanelProps> = ({
         {/* Terms */}
         <div className="text-center bg-card/30 rounded-2xl p-4 mt-4 mb-6">
           <p className="text-xs text-foreground/80">
-            By continuing, you agree to our{' '}
+            By continuing, you agree to our{" "}
             <a
               href="https://ardrive.io/tos-and-privacy/"
               target="_blank"

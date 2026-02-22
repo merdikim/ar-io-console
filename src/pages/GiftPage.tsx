@@ -1,4 +1,4 @@
-import GiftPanel from '../components/panels/GiftPanel';
+import GiftPanel from "../components/panels/GiftPanel";
 
 export default function GiftPage() {
   return (

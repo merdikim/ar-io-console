@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Coins, Share2, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import { getTurboBalance } from '../../utils';
-import { useStore } from '../../store/useStore';
-import { useWincForOneGiB } from '../../hooks/useWincForOneGiB';
-import { wincPerCredit } from '../../constants';
+import { useEffect, useState } from "react";
+import { Coins, Share2, Plus } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { getTurboBalance } from "../../utils";
+import { useStore } from "../../store/useStore";
+import { useWincForOneGiB } from "../../hooks/useWincForOneGiB";
+import { wincPerCredit } from "../../constants";
 
 interface BalanceData {
   credits: number;
@@ -28,25 +28,27 @@ export default function BalanceCardsGrid() {
       try {
         const balance = await getTurboBalance(address, walletType);
 
-        const {
-          winc,
-          controlledWinc,
-          effectiveBalance,
-        } = balance;
+        const { winc, controlledWinc, effectiveBalance } = balance;
 
         const credits = Number(winc) / wincPerCredit;
-        const gibStorage = wincForOneGiB ? Number(winc) / Number(wincForOneGiB) : 0;
-        const sharedOut = controlledWinc ? (Number(controlledWinc) - Number(winc)) / wincPerCredit : 0;
-        const available = effectiveBalance ? (Number(effectiveBalance) - Number(winc)) / wincPerCredit : 0;
+        const gibStorage = wincForOneGiB
+          ? Number(winc) / Number(wincForOneGiB)
+          : 0;
+        const sharedOut = controlledWinc
+          ? (Number(controlledWinc) - Number(winc)) / wincPerCredit
+          : 0;
+        const available = effectiveBalance
+          ? (Number(effectiveBalance) - Number(winc)) / wincPerCredit
+          : 0;
 
         setBalanceData({
           credits,
           gibStorage,
           sharedOut,
-          available
+          available,
         });
       } catch (error) {
-        console.error('Failed to fetch balance data:', error);
+        console.error("Failed to fetch balance data:", error);
       } finally {
         setLoading(false);
       }
@@ -61,17 +63,17 @@ export default function BalanceCardsGrid() {
 
   const formatCredits = (credits: number): string => {
     if (credits >= 1) {
-      return credits.toLocaleString('en-US', {
+      return credits.toLocaleString("en-US", {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 2
+        maximumFractionDigits: 2,
       });
     } else if (credits > 0) {
-      return credits.toLocaleString('en-US', {
+      return credits.toLocaleString("en-US", {
         minimumFractionDigits: 6,
-        maximumFractionDigits: 8
+        maximumFractionDigits: 8,
       });
     } else {
-      return '0';
+      return "0";
     }
   };
 
@@ -84,8 +86,12 @@ export default function BalanceCardsGrid() {
             <Coins className="w-5 h-5 text-foreground" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-foreground">Account Balance</h3>
-            <p className="text-sm text-foreground/80">Credits and storage overview</p>
+            <h3 className="text-lg font-bold text-foreground">
+              Account Balance
+            </h3>
+            <p className="text-sm text-foreground/80">
+              Credits and storage overview
+            </p>
           </div>
         </div>
       </div>
@@ -108,18 +114,17 @@ export default function BalanceCardsGrid() {
             </div>
           </div>
 
-
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3">
             <button
-              onClick={() => navigate('/topup')}
+              onClick={() => navigate("/topup")}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-foreground text-card rounded-full font-medium hover:bg-foreground/90 transition-colors"
             >
               <Plus className="w-4 h-4" />
               Top Up Credits
             </button>
             <button
-              onClick={() => navigate('/share')}
+              onClick={() => navigate("/share")}
               className="flex-1 flex items-center justify-center gap-2 py-3 px-4 bg-card border border-border/20 rounded-full text-foreground hover:bg-card/80 transition-colors"
             >
               <Share2 className="w-4 h-4" />

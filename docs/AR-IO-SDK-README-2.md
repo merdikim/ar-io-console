@@ -12,15 +12,14 @@ Factory function to that creates a read-only or writeable client. By providing a
 // in a browser environment with ArConnect
 const ant = ANT.init({
   signer: new ArConnectSigner(window.arweaveWallet, Arweave.init({})),
-  processId: 'bh9l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM'
+  processId: "bh9l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM",
 });
 
 // in a node environment
 const ant = ANT.init({
   signer: new ArweaveSigner(JWK),
-  processId: 'bh9l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM'
+  processId: "bh9l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM",
 });
-
 ```
 
 #### `getInfo()`
@@ -200,9 +199,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.transfer(
-  { target: 'aGzM_yjralacHIUo8_nQXMbh9l1cy0aksiL_x9M359f' },
+  { target: "aGzM_yjralacHIUo8_nQXMbh9l1cy0aksiL_x9M359f" },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -214,9 +213,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.setController(
-  { controller: 'aGzM_yjralacHIUo8_nQXMbh9l1cy0aksiL_x9M359f' },
+  { controller: "aGzM_yjralacHIUo8_nQXMbh9l1cy0aksiL_x9M359f" },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -228,9 +227,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.removeController(
-  { controller: 'aGzM_yjralacHIUo8_nQXMbh9l1cy0aksiL_x9M359f' },
+  { controller: "aGzM_yjralacHIUo8_nQXMbh9l1cy0aksiL_x9M359f" },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -242,10 +241,10 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 // get the ant for the base name
-const arnsRecord = await ario.getArNSRecord({ name: 'ardrive' });
+const arnsRecord = await ario.getArNSRecord({ name: "ardrive" });
 const ant = await ANT.init({ processId: arnsName.processId });
 const { id: txId } = await ant.setBaseNameRecord({
-  transactionId: '432l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM',
+  transactionId: "432l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM",
   ttlSeconds: 3600,
 });
 
@@ -261,16 +260,16 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 > Records, or `undernames` are configured with the `transactionId` - the arweave transaction id the record resolves - and `ttlSeconds`, the Time To Live in the cache of client applications.
 
 ```typescript
-const arnsRecord = await ario.getArNSRecord({ name: 'ardrive' });
+const arnsRecord = await ario.getArNSRecord({ name: "ardrive" });
 const ant = await ANT.init({ processId: arnsName.processId });
 const { id: txId } = await ant.setUndernameRecord(
   {
-    undername: 'dapp',
-    transactionId: '432l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM',
+    undername: "dapp",
+    transactionId: "432l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM",
     ttlSeconds: 900,
   },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 
 // dapp_ardrive.ar.io will now resolve to the provided 432l1cy0aksiL_x9M359faGzM_yjralacHIUo8_nQXM transaction id
@@ -284,9 +283,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.removeUndernameRecord(
-  { undername: 'dapp' },
+  { undername: "dapp" },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 
 // dapp_ardrive.ar.io will no longer resolve to the provided transaction id
@@ -325,12 +324,12 @@ Removes a record from the ANT process.
 _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
-const arnsRecord = await ario.getArNSRecord({ name: 'ardrive' });
+const arnsRecord = await ario.getArNSRecord({ name: "ardrive" });
 const ant = await ANT.init({ processId: arnsName.processId });
 const { id: txId } = await ant.removeRecord(
-  { undername: 'dapp' },
+  { undername: "dapp" },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 
 // dapp_ardrive.ar.io will no longer resolve to the provided transaction id
@@ -344,9 +343,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.setName(
-  { name: 'My ANT' },
+  { name: "My ANT" },
   // optional additional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -358,9 +357,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.setTicker(
-  { ticker: 'ANT-NEW-TICKER' },
+  { ticker: "ANT-NEW-TICKER" },
   // optional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -372,9 +371,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.setDescription(
-  { description: 'A friendly description of this ANT' },
+  { description: "A friendly description of this ANT" },
   // optional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -386,9 +385,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.setDescription(
-  { keywords: ['Game', 'FPS', 'AO'] },
+  { keywords: ["Game", "FPS", "AO"] },
   // optional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -408,9 +407,9 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.setLogo(
-  { txId: 'U7RXcpaVShG4u9nIcPVmm2FJSM5Gru9gQCIiRaIPV7f' },
+  { txId: "U7RXcpaVShG4u9nIcPVmm2FJSM5Gru9gQCIiRaIPV7f" },
   // optional tags
-  { tags: [{ name: 'App-Name', value: 'My-Awesome-App' }] },
+  { tags: [{ name: "App-Name", value: "My-Awesome-App" }] },
 );
 ```
 
@@ -422,7 +421,7 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.releaseName({
-  name: 'permalink',
+  name: "permalink",
   arioProcessId: ARIO_MAINNET_PROCESS_ID, // releases the name owned by the ANT and sends it to recently returned names on the ARIO contract
 });
 ```
@@ -435,7 +434,7 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.reassignName({
-  name: 'ardrive',
+  name: "ardrive",
   arioProcessId: ARIO_MAINNET_PROCESS_ID,
   antProcessId: NEW_ANT_PROCESS_ID, // the new ANT process id that will take over ownership of the name
 });
@@ -449,8 +448,8 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.approvePrimaryNameRequest({
-  name: 'arns',
-  address: 't4Xr0_J4Iurt7caNST02cMotaz2FIbWQ4Kbj616RHl3', // must match the request initiator address
+  name: "arns",
+  address: "t4Xr0_J4Iurt7caNST02cMotaz2FIbWQ4Kbj616RHl3", // must match the request initiator address
   arioProcessId: ARIO_MAINNET_PROCESS_ID, // the ARIO process id to use for the request
 });
 ```
@@ -463,7 +462,7 @@ _Note: Requires `signer` to be provided on `ANT.init` to sign the transaction._
 
 ```typescript
 const { id: txId } = await ant.removePrimaryNames({
-  names: ['arns', 'test_arns'], // any primary names associated with a base name controlled by this ANT will be removed
+  names: ["arns", "test_arns"], // any primary names associated with a base name controlled by this ANT will be removed
   arioProcessId: ARIO_MAINNET_PROCESS_ID,
   notifyOwners: true, // if true, the owners of the removed names will be send AO messages to notify them of the removal
 });
@@ -498,7 +497,7 @@ The ARIO process stores all values as mARIO (milli-ARIO) to avoid floating-point
 ### Converting ARIO to mARIO
 
 ```typescript
-import { ARIOToken, mARIOToken } from '@ar.io/sdk';
+import { ARIOToken, mARIOToken } from "@ar.io/sdk";
 
 const arioValue = 1;
 const mARIOValue = new ARIOToken(arioValue).toMARIO();
@@ -512,10 +511,10 @@ const arioValue = new mARIOToken(mARIOValue).toARIO();
 The library uses the [Winston] logger for node based projects, and `console` logger for web based projects by default. You can configure the log level via `setLogLevel()` API. Alternatively you can set a custom logger as the default logger so long as it satisfes the `ILogger` interface.
 
 ```typescript
-import { Logger } from '@ar.io/sdk';
+import { Logger } from "@ar.io/sdk";
 
 // set the log level
-Logger.default.setLogLevel('debug');
+Logger.default.setLogLevel("debug");
 
 // provide your own logger
 Logger.default = winston.createLogger({ ...loggerConfigs }); // or some other logger that satisifes ILogger interface

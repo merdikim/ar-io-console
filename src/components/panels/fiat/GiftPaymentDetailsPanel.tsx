@@ -1,11 +1,11 @@
-import { CardElement, useElements, useStripe } from '@stripe/react-stripe-js';
-import { StripeCardElementOptions } from '@stripe/stripe-js';
-import { FC, useState } from 'react';
-import { isEmail } from 'validator';
-import { CircleX, CreditCard, Gift, Loader2 } from 'lucide-react';
-import useCountries from '../../../hooks/useCountries';
-import { useStore } from '../../../store/useStore';
-import { useTheme } from '../../../hooks/useTheme';
+import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
+import { StripeCardElementOptions } from "@stripe/stripe-js";
+import { FC, useState } from "react";
+import { isEmail } from "validator";
+import { CircleX, CreditCard, Gift, Loader2 } from "lucide-react";
+import useCountries from "../../../hooks/useCountries";
+import { useStore } from "../../../store/useStore";
+import { useTheme } from "../../../hooks/useTheme";
 
 interface GiftPaymentDetailsPanelProps {
   usdAmount: number;
@@ -23,7 +23,7 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   paymentIntent,
   onBack,
-  onNext
+  onNext,
 }) => {
   const countries = useCountries();
   const stripe = useStripe();
@@ -31,54 +31,54 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
   const { setPaymentInformation } = useStore();
   const { isLight } = useTheme();
 
-  const [name, setName] = useState<string>('');
-  const [country, setCountry] = useState<string>('');
-  const [email, setEmail] = useState<string>('');
+  const [name, setName] = useState<string>("");
+  const [country, setCountry] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
   const [keepMeUpdated, setKeepMeUpdated] = useState<boolean>(false);
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
 
-  const [nameError, setNameError] = useState<string>('');
-  const [cardError, setCardError] = useState<string>('');
-  const [countryError, setCountryError] = useState<string>('');
-  const [emailError, setEmailError] = useState<string>('');
+  const [nameError, setNameError] = useState<string>("");
+  const [cardError, setCardError] = useState<string>("");
+  const [countryError, setCountryError] = useState<string>("");
+  const [emailError, setEmailError] = useState<string>("");
 
   const validateAndProceed = async () => {
     // Reset errors
-    setNameError('');
-    setCardError('');
-    setCountryError('');
-    setEmailError('');
+    setNameError("");
+    setCardError("");
+    setCountryError("");
+    setEmailError("");
 
     let hasErrors = false;
 
     // Validate name
     if (!name.trim()) {
-      setNameError('Name is required');
+      setNameError("Name is required");
       hasErrors = true;
     }
 
     // Validate country
     if (!country) {
-      setCountryError('Country is required');
+      setCountryError("Country is required");
       hasErrors = true;
     }
 
     // Validate email (optional, but if provided must be valid)
     if (email && !isEmail(email)) {
-      setEmailError('Please enter a valid email address');
+      setEmailError("Please enter a valid email address");
       hasErrors = true;
     }
 
     // Validate card
     if (!elements) {
-      setCardError('Card information is required');
+      setCardError("Card information is required");
       hasErrors = true;
       return;
     }
 
     const cardElement = elements.getElement(CardElement);
     if (!cardElement) {
-      setCardError('Card information is required');
+      setCardError("Card information is required");
       hasErrors = true;
       return;
     }
@@ -90,7 +90,7 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
     try {
       // Create Stripe payment method
       const { error, paymentMethod } = await stripe!.createPaymentMethod({
-        type: 'card',
+        type: "card",
         card: cardElement,
         billing_details: {
           name,
@@ -99,7 +99,7 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
       });
 
       if (error) {
-        setCardError(error.message || 'Failed to process card information');
+        setCardError(error.message || "Failed to process card information");
         return;
       }
 
@@ -118,7 +118,7 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
 
       onNext();
     } catch {
-      setCardError('Failed to process payment information');
+      setCardError("Failed to process payment information");
     } finally {
       setIsProcessing(false);
     }
@@ -127,15 +127,15 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
   const cardElementOptions: StripeCardElementOptions = {
     style: {
       base: {
-        fontSize: '16px',
-        color: isLight ? '#23232D' : '#ededed', // text-foreground (theme-aware)
-        backgroundColor: isLight ? '#FFFFFF' : '#171717', // bg-card (theme-aware)
-        '::placeholder': {
-          color: isLight ? '#6C6C87' : '#A3A3AD', // text-foreground/80 (theme-aware)
+        fontSize: "16px",
+        color: isLight ? "#23232D" : "#ededed", // text-foreground (theme-aware)
+        backgroundColor: isLight ? "#FFFFFF" : "#171717", // bg-card (theme-aware)
+        "::placeholder": {
+          color: isLight ? "#6C6C87" : "#A3A3AD", // text-foreground/80 (theme-aware)
         },
       },
       invalid: {
-        color: '#ef4444',
+        color: "#ef4444",
       },
     },
   };
@@ -148,7 +148,9 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
           <Gift className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">Payment Details</h3>
+          <h3 className="text-2xl font-heading font-bold text-foreground mb-1">
+            Payment Details
+          </h3>
           <p className="text-sm text-foreground/80">
             Enter your payment information to send the gift
           </p>
@@ -157,10 +159,11 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
 
       {/* Main Content */}
       <div className="bg-gradient-to-br from-primary/5 to-primary/3 rounded-2xl border border-border/20 p-4 sm:p-6 mb-4 sm:mb-6">
-
         {/* Gift Summary */}
         <div className="bg-card rounded-2xl p-4 mb-6">
-          <h4 className="font-heading font-bold text-foreground mb-3">Gift Summary</h4>
+          <h4 className="font-heading font-bold text-foreground mb-3">
+            Gift Summary
+          </h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-foreground/80">Amount:</span>
@@ -232,13 +235,16 @@ const GiftPaymentDetailsPanel: FC<GiftPaymentDetailsPanelProps> = ({
               Card Information <span className="text-error">*</span>
             </label>
             <div className="p-3 rounded-2xl border border-border/20 bg-card">
-              <CardElement options={cardElementOptions} onChange={(e) => {
-                if (e.error) {
-                  setCardError(e.error.message);
-                } else {
-                  setCardError('');
-                }
-              }} />
+              <CardElement
+                options={cardElementOptions}
+                onChange={(e) => {
+                  if (e.error) {
+                    setCardError(e.error.message);
+                  } else {
+                    setCardError("");
+                  }
+                }}
+              />
             </div>
             {cardError && (
               <div className="flex items-center gap-2 mt-2 text-error text-sm">

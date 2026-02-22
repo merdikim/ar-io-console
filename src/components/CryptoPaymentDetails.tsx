@@ -1,17 +1,22 @@
-import { useState, useEffect } from 'react';
-import { SupportedTokenType, tokenLabels } from '../constants';
-import { formatTokenAmount, calculateRequiredTokenAmount } from '../utils/jitPayment';
-import { useTokenBalance } from '../hooks/useTokenBalance';
-import { Loader2, ChevronDown, ChevronUp, AlertTriangle } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { SupportedTokenType, tokenLabels } from "../constants";
+import {
+  formatTokenAmount,
+  calculateRequiredTokenAmount,
+} from "../utils/jitPayment";
+import { useTokenBalance } from "../hooks/useTokenBalance";
+import { Loader2, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
 export interface CryptoPaymentDetailsProps {
   creditsNeeded: number;
   totalCost: number;
   tokenType: SupportedTokenType;
   walletAddress: string | null;
-  walletType: 'arweave' | 'ethereum' | 'solana' | null;
+  walletType: "arweave" | "ethereum" | "solana" | null;
   onBalanceValidation: (hasSufficientBalance: boolean) => void;
-  onShortageUpdate: (shortage: { amount: number; tokenType: SupportedTokenType } | null) => void;
+  onShortageUpdate: (
+    shortage: { amount: number; tokenType: SupportedTokenType } | null,
+  ) => void;
   localJitMax: number;
   onMaxTokenAmountChange: (amount: number) => void;
   x402Pricing?: {
@@ -42,7 +47,7 @@ export function CryptoPaymentDetails({
   const [bufferPercentage, setBufferPercentage] = useState(1); // Default 1% buffer
 
   const tokenLabel = tokenLabels[tokenType];
-  const BUFFER_MULTIPLIER = 1 + (bufferPercentage / 100); // Adjustable buffer
+  const BUFFER_MULTIPLIER = 1 + bufferPercentage / 100; // Adjustable buffer
 
   // Fetch wallet balance
   const {
@@ -57,7 +62,7 @@ export function CryptoPaymentDetails({
     const calculate = async () => {
       try {
         // For base-usdc, use x402 pricing directly
-        if (tokenType === 'base-usdc' && x402Pricing) {
+        if (tokenType === "base-usdc" && x402Pricing) {
           // Don't set cost while loading to avoid showing "FREE" flash
           if (x402Pricing.loading) {
             setEstimatedCost(null); // Show "Calculating..."
@@ -92,12 +97,12 @@ export function CryptoPaymentDetails({
         // For Crypto tab, max is just the buffered cost (already includes buffer from BUFFER_MULTIPLIER)
         onMaxTokenAmountChange(cost.tokenAmountReadable);
       } catch (error) {
-        console.error('Failed to calculate crypto cost:', error);
+        console.error("Failed to calculate crypto cost:", error);
         setEstimatedCost(null);
       }
     };
 
-    const hasCost = (creditsNeeded > 0) || (totalCost > 0);
+    const hasCost = creditsNeeded > 0 || totalCost > 0;
     if (hasCost) {
       calculate();
     } else {
@@ -106,7 +111,15 @@ export function CryptoPaymentDetails({
       onMaxTokenAmountChange(0);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [creditsNeeded, totalCost, tokenType, bufferPercentage, x402Pricing?.usdcAmount, x402Pricing?.loading, x402Pricing?.error]);
+  }, [
+    creditsNeeded,
+    totalCost,
+    tokenType,
+    bufferPercentage,
+    x402Pricing?.usdcAmount,
+    x402Pricing?.loading,
+    x402Pricing?.error,
+  ]);
 
   // Validate balance and update shortage info
   useEffect(() => {
@@ -128,7 +141,8 @@ export function CryptoPaymentDetails({
       return;
     }
 
-    const hasSufficientBalance = tokenBalance >= estimatedCost.tokenAmountReadable;
+    const hasSufficientBalance =
+      tokenBalance >= estimatedCost.tokenAmountReadable;
     onBalanceValidation(hasSufficientBalance);
 
     // Update shortage info for parent component warning
@@ -138,9 +152,19 @@ export function CryptoPaymentDetails({
     } else {
       onShortageUpdate(null);
     }
-  }, [tokenBalance, estimatedCost, balanceError, isNetworkError, tokenType, onBalanceValidation, onShortageUpdate]);
+  }, [
+    tokenBalance,
+    estimatedCost,
+    balanceError,
+    isNetworkError,
+    tokenType,
+    onBalanceValidation,
+    onShortageUpdate,
+  ]);
 
-  const afterUpload = estimatedCost ? Math.max(0, tokenBalance - estimatedCost.tokenAmountReadable) : tokenBalance;
+  const afterUpload = estimatedCost
+    ? Math.max(0, tokenBalance - estimatedCost.tokenAmountReadable)
+    : tokenBalance;
 
   return (
     <div className="mb-4">
@@ -155,18 +179,26 @@ export function CryptoPaymentDetails({
                   <span className="text-success font-medium">FREE</span>
                 ) : (
                   <>
-                    ~{formatTokenAmount(estimatedCost.tokenAmountReadable, tokenType)} {tokenLabel}
-                    {estimatedCost.estimatedUSD && estimatedCost.estimatedUSD > 0 && (
-                      <span className="text-xs text-foreground/80 ml-2">
-                        (≈ ${estimatedCost.estimatedUSD < 0.01
-                          ? estimatedCost.estimatedUSD.toFixed(4)
-                          : estimatedCost.estimatedUSD.toFixed(2)})
-                      </span>
-                    )}
+                    ~
+                    {formatTokenAmount(
+                      estimatedCost.tokenAmountReadable,
+                      tokenType,
+                    )}{" "}
+                    {tokenLabel}
+                    {estimatedCost.estimatedUSD &&
+                      estimatedCost.estimatedUSD > 0 && (
+                        <span className="text-xs text-foreground/80 ml-2">
+                          (≈ $
+                          {estimatedCost.estimatedUSD < 0.01
+                            ? estimatedCost.estimatedUSD.toFixed(4)
+                            : estimatedCost.estimatedUSD.toFixed(2)}
+                          )
+                        </span>
+                      )}
                   </>
                 )
               ) : (
-                'Calculating...'
+                "Calculating..."
               )}
             </span>
           </div>

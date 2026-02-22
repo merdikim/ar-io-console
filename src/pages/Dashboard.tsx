@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { features } from './dashboardFeatures';
+import { useState } from "react";
+import { features } from "./dashboardFeatures";
 
 interface DashboardProps {
   selectedFeature?: any;

@@ -1,30 +1,30 @@
-import { useQuery } from '@tanstack/react-query';
-import { TurboFactory } from '@ardrive/turbo-sdk/web';
-import { SupportedTokenType } from '../constants';
-import { useTurboConfig } from './useTurboConfig';
+import { useQuery } from "@tanstack/react-query";
+import { TurboFactory } from "@ardrive/turbo-sdk/web";
+import { SupportedTokenType } from "../constants";
+import { useTurboConfig } from "./useTurboConfig";
 
 /**
  * Get the smallest unit for a token type (e.g., 10^18 wei for ETH)
  */
 const getTokenSmallestUnit = (tokenType: SupportedTokenType): bigint => {
   switch (tokenType) {
-    case 'arweave':
+    case "arweave":
       return BigInt(10 ** 12); // winston
-    case 'ario':
-    case 'base-ario':
+    case "ario":
+    case "base-ario":
       return BigInt(10 ** 6); // mARIO - 1 ARIO = 1,000,000 mARIO (same for AO and Base)
-    case 'ethereum':
-    case 'base-eth':
+    case "ethereum":
+    case "base-eth":
       return BigInt(10 ** 18); // wei
-    case 'solana':
+    case "solana":
       return BigInt(10 ** 9); // lamports
-    case 'pol':
+    case "pol":
       return BigInt(10 ** 18); // wei equivalent
-    case 'kyve':
+    case "kyve":
       return BigInt(10 ** 6); // ukyve
-    case 'usdc':
-    case 'base-usdc':
-    case 'polygon-usdc':
+    case "usdc":
+    case "base-usdc":
+    case "polygon-usdc":
       return BigInt(10 ** 6); // USDC uses 6 decimals on all chains
     default:
       return BigInt(10 ** 12); // default
@@ -41,12 +41,17 @@ const getTokenSmallestUnit = (tokenType: SupportedTokenType): bigint => {
  */
 export function useCryptoPriceForWinc(
   wincAmount: number | undefined,
-  tokenType: SupportedTokenType
+  tokenType: SupportedTokenType,
 ): number | undefined {
   const turboConfig = useTurboConfig(tokenType);
 
   const { data: tokenAmount } = useQuery({
-    queryKey: ['cryptoPriceForWinc', wincAmount, tokenType, turboConfig.paymentServiceConfig.url],
+    queryKey: [
+      "cryptoPriceForWinc",
+      wincAmount,
+      tokenType,
+      turboConfig.paymentServiceConfig.url,
+    ],
     queryFn: async () => {
       if (!wincAmount || wincAmount <= 0) return undefined;
 
@@ -66,7 +71,8 @@ export function useCryptoPriceForWinc(
 
       // Calculate token amount: (wincAmount / wincForOneToken) * oneToken
       // Then convert to display units by dividing by smallest unit
-      const tokenInSmallestUnit = (BigInt(Math.round(wincAmount)) * oneToken) / wincForOneTokenBigInt;
+      const tokenInSmallestUnit =
+        (BigInt(Math.round(wincAmount)) * oneToken) / wincForOneTokenBigInt;
 
       // Convert to display units (e.g., wei to ETH)
       return Number(tokenInSmallestUnit) / Number(oneToken);
@@ -90,12 +96,17 @@ export function useCryptoPriceForWinc(
  */
 export function useWincForCrypto(
   tokenAmount: bigint | undefined,
-  tokenType: SupportedTokenType
+  tokenType: SupportedTokenType,
 ): number | undefined {
   const turboConfig = useTurboConfig(tokenType);
 
   const { data: wincAmount } = useQuery({
-    queryKey: ['wincForCrypto', tokenAmount?.toString(), tokenType, turboConfig.paymentServiceConfig.url],
+    queryKey: [
+      "wincForCrypto",
+      tokenAmount?.toString(),
+      tokenType,
+      turboConfig.paymentServiceConfig.url,
+    ],
     queryFn: async () => {
       if (!tokenAmount || tokenAmount <= 0n) return undefined;
 

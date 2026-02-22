@@ -13,9 +13,9 @@
 export function sanitizeUndername(value: string): string {
   return value
     .toLowerCase()
-    .replace(/\s+/g, '_')
-    .replace(/[^a-z0-9_-]/g, '')
-    .replace(/^[-_]+|[-_]+$/g, '');
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_-]/g, "")
+    .replace(/^[-_]+|[-_]+$/g, "");
 }
 
 /**
@@ -37,13 +37,13 @@ export function isValidUndername(value: string): boolean {
  */
 export function getUndernameValidationMessage(value: string): string | null {
   if (!value || !value.trim()) {
-    return 'Undername cannot be empty';
+    return "Undername cannot be empty";
   }
 
   const sanitized = sanitizeUndername(value);
 
   if (sanitized.length === 0) {
-    return 'Undername contains only invalid characters';
+    return "Undername contains only invalid characters";
   }
 
   if (sanitized !== value) {

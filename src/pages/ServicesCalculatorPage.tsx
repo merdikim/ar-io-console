@@ -1,4 +1,4 @@
-import ServicesCalculatorPanel from '../components/panels/ServicesCalculatorPanel';
+import ServicesCalculatorPanel from "../components/panels/ServicesCalculatorPanel";
 
 export default function ServicesCalculatorPage() {
   return (

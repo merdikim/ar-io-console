@@ -1,14 +1,19 @@
-import React from 'react';
-import { Coins } from 'lucide-react';
-import { useStore } from '@/store/useStore';
-import { useQuery } from '@tanstack/react-query';
-import { getTurboBalance } from '@/utils';
+import React from "react";
+import { Coins } from "lucide-react";
+import { useStore } from "@/store/useStore";
+import { useQuery } from "@tanstack/react-query";
+import { getTurboBalance } from "@/utils";
 
 export function CreditBalance() {
   const { address, walletType, getCurrentConfig } = useStore();
 
   const { data: balance, isLoading } = useQuery({
-    queryKey: ['balance', address, walletType, getCurrentConfig().paymentServiceUrl],
+    queryKey: [
+      "balance",
+      address,
+      walletType,
+      getCurrentConfig().paymentServiceUrl,
+    ],
     queryFn: async () => {
       if (!address || !walletType) return null;
 
@@ -40,7 +45,7 @@ export function CreditBalance() {
         ) : (
           <>
             <span className="font-mono font-medium">
-              {balance ? formatBalance(balance) : '0'}
+              {balance ? formatBalance(balance) : "0"}
             </span>
             <span className="text-muted ml-1">Credits</span>
           </>

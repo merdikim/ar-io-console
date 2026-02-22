@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { type AoGateway } from '@ar.io/sdk';
-import { TurboFactory } from '@ardrive/turbo-sdk/web';
-import { useTurboConfig } from './useTurboConfig';
-import { useStore } from '../store/useStore';
+import { useState, useEffect } from "react";
+import { type AoGateway } from "@ar.io/sdk";
+import { TurboFactory } from "@ardrive/turbo-sdk/web";
+import { useTurboConfig } from "./useTurboConfig";
+import { useStore } from "../store/useStore";
 
 /**
  * Fetch with retry and exponential backoff for rate-limited APIs.
@@ -10,7 +10,7 @@ import { useStore } from '../store/useStore';
  */
 async function fetchWithRetry(
   url: string,
-  options: { maxRetries?: number; initialDelayMs?: number } = {}
+  options: { maxRetries?: number; initialDelayMs?: number } = {},
 ): Promise<Response> {
   const { maxRetries = 3, initialDelayMs = 1000 } = options;
   let lastError: Error | null = null;
@@ -21,14 +21,16 @@ async function fetchWithRetry(
 
       // Retry on rate limit or server errors
       if (response.status === 429 || response.status >= 500) {
-        const retryAfter = response.headers.get('Retry-After');
+        const retryAfter = response.headers.get("Retry-After");
         const delayMs = retryAfter
           ? parseInt(retryAfter, 10) * 1000
           : initialDelayMs * Math.pow(2, attempt);
 
         if (attempt < maxRetries - 1) {
-          console.warn(`[GatewayInfo] ${url} returned ${response.status}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`);
-          await new Promise(resolve => setTimeout(resolve, delayMs));
+          console.warn(
+            `[GatewayInfo] ${url} returned ${response.status}, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, delayMs));
           continue;
         }
       }
@@ -39,13 +41,19 @@ async function fetchWithRetry(
 
       if (attempt < maxRetries - 1) {
         const delayMs = initialDelayMs * Math.pow(2, attempt);
-        console.warn(`[GatewayInfo] ${url} failed, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries}):`, error);
-        await new Promise(resolve => setTimeout(resolve, delayMs));
+        console.warn(
+          `[GatewayInfo] ${url} failed, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries}):`,
+          error,
+        );
+        await new Promise((resolve) => setTimeout(resolve, delayMs));
       }
     }
   }
 
-  throw lastError || new Error(`Failed to fetch ${url} after ${maxRetries} attempts`);
+  throw (
+    lastError ||
+    new Error(`Failed to fetch ${url} after ${maxRetries} attempts`)
+  );
 }
 
 interface UploadServiceInfo {
@@ -67,9 +75,9 @@ interface X402Pricing {
   maxPrice: string;
   currency: string;
   exampleCosts: {
-    '1KB': number;
-    '1MB': number;
-    '1GB': number;
+    "1KB": number;
+    "1MB": number;
+    "1GB": number;
   };
 }
 
@@ -117,7 +125,7 @@ interface PeersInfo {
   arweaveNodeCount: number;
 }
 
-const CACHE_KEY_PREFIX = 'turbo-gateway-info';
+const CACHE_KEY_PREFIX = "turbo-gateway-info";
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
 interface CachedGatewayInfo {
@@ -133,11 +141,14 @@ interface CachedGatewayInfo {
 }
 
 export function useGatewayInfo() {
-  const [uploadServiceInfo, setUploadServiceInfo] = useState<UploadServiceInfo | null>(null);
+  const [uploadServiceInfo, setUploadServiceInfo] =
+    useState<UploadServiceInfo | null>(null);
   const [gatewayInfo, setGatewayInfo] = useState<GatewayInfo | null>(null);
-  const [arIOGatewayInfo, setArIOGatewayInfo] = useState<ArIOGatewayInfo | null>(null);
+  const [arIOGatewayInfo, setArIOGatewayInfo] =
+    useState<ArIOGatewayInfo | null>(null);
   const [pricingInfo, setPricingInfo] = useState<PricingInfo | null>(null);
-  const [arweaveNodeInfo, setArweaveNodeInfo] = useState<ArweaveNodeInfo | null>(null);
+  const [arweaveNodeInfo, setArweaveNodeInfo] =
+    useState<ArweaveNodeInfo | null>(null);
   const [peersInfo, setPeersInfo] = useState<PeersInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -160,8 +171,9 @@ export function useGatewayInfo() {
         if (cached) {
           try {
             const parsedCache: CachedGatewayInfo = JSON.parse(cached);
-            const isExpired = Date.now() - parsedCache.timestamp > CACHE_DURATION;
-            
+            const isExpired =
+              Date.now() - parsedCache.timestamp > CACHE_DURATION;
+
             if (!isExpired) {
               // Using cached gateway info
               setUploadServiceInfo(parsedCache.data.uploadServiceInfo);
@@ -174,7 +186,7 @@ export function useGatewayInfo() {
               return;
             }
           } catch (err) {
-            console.warn('Failed to parse cached gateway info:', err);
+            console.warn("Failed to parse cached gateway info:", err);
           }
         }
 
@@ -193,18 +205,18 @@ export function useGatewayInfo() {
           uploadData = await uploadResponse.json();
           setUploadServiceInfo(uploadData);
         } catch (err) {
-          console.warn('Failed to fetch upload service info:', err);
+          console.warn("Failed to fetch upload service info:", err);
         }
 
         // Fetch gateway info from configured AR.IO gateway
         const config = getCurrentConfig();
-        const gatewayUrl = config.arioGatewayUrl.replace(/\/$/, ''); // Remove trailing slash
+        const gatewayUrl = config.arioGatewayUrl.replace(/\/$/, ""); // Remove trailing slash
         try {
           const gatewayResponse = await fetch(`${gatewayUrl}/ar-io/info`);
           gatewayData = await gatewayResponse.json();
           setGatewayInfo(gatewayData);
         } catch (err) {
-          console.warn('Failed to fetch gateway info:', err);
+          console.warn("Failed to fetch gateway info:", err);
         }
 
         // Fetch peers info from configured gateway
@@ -217,18 +229,21 @@ export function useGatewayInfo() {
           };
           setPeersInfo(peersData);
         } catch (err) {
-          console.warn('Failed to fetch peers info:', err);
+          console.warn("Failed to fetch peers info:", err);
         }
 
         // Fetch AR.IO gateway info using SDK (if we have gateway wallet address)
         if (gatewayData?.wallet) {
           try {
-            const { getARIO } = await import('../utils');
+            const { getARIO } = await import("../utils");
             const io = getARIO();
             arIOData = await io.getGateway({ address: gatewayData.wallet });
             setArIOGatewayInfo(arIOData);
           } catch (err) {
-            console.warn('Gateway not found in AR.IO network or lookup failed:', err);
+            console.warn(
+              "Gateway not found in AR.IO network or lookup failed:",
+              err,
+            );
             // This is expected for some gateways - they might not be registered in AR.IO
           }
         }
@@ -236,12 +251,12 @@ export function useGatewayInfo() {
         // Fetch Arweave node info from gateway
         if (uploadData?.gateway) {
           try {
-            const gatewayHost = uploadData.gateway.replace('https://', '');
+            const gatewayHost = uploadData.gateway.replace("https://", "");
             const arweaveResponse = await fetch(`https://${gatewayHost}/info`);
             arweaveNodeData = await arweaveResponse.json();
             setArweaveNodeInfo(arweaveNodeData);
           } catch (err) {
-            console.warn('Failed to fetch Arweave node info:', err);
+            console.warn("Failed to fetch Arweave node info:", err);
           }
         }
 
@@ -264,15 +279,15 @@ export function useGatewayInfo() {
             // from the Arweave network itself, not a gateway's cached/modified price.
             const arweaveResponse = await fetchWithRetry(
               `https://arweave.net/price/${gigabyteInBytes}`,
-              { maxRetries: 2, initialDelayMs: 500 }
+              { maxRetries: 2, initialDelayMs: 500 },
             );
             arweaveWinstonPerGiB = Number(await arweaveResponse.text());
 
             // Fetch AR/USD price from CoinGecko (free tier, may rate limit).
             // Uses retry with backoff to handle 429 responses.
             const cgResponse = await fetchWithRetry(
-              'https://api.coingecko.com/api/v3/simple/price?ids=arweave&vs_currencies=usd',
-              { maxRetries: 3, initialDelayMs: 1000 }
+              "https://api.coingecko.com/api/v3/simple/price?ids=arweave&vs_currencies=usd",
+              { maxRetries: 3, initialDelayMs: 1000 },
             );
             const cgData = await cgResponse.json();
             const arUSDPrice = cgData.arweave?.usd;
@@ -283,18 +298,21 @@ export function useGatewayInfo() {
               arweaveUSDPerGiB = arPerGiB * arUSDPrice;
             }
           } catch (err) {
-            console.warn('[GatewayInfo] Arweave network pricing fetch failed:', err);
+            console.warn(
+              "[GatewayInfo] Arweave network pricing fetch failed:",
+              err,
+            );
           }
 
           // Calculate the premium (Turbo vs raw Arweave)
           let turboFeePercentage = undefined;
 
           if (turboUSDPerGiB > 0 && arweaveUSDPerGiB && arweaveUSDPerGiB > 0) {
-            turboFeePercentage = (1 - (arweaveUSDPerGiB / turboUSDPerGiB)) * 100;
+            turboFeePercentage = (1 - arweaveUSDPerGiB / turboUSDPerGiB) * 100;
           }
 
           pricingData = {
-            wincPerGiB: arweaveWinstonPerGiB?.toString() || '0',
+            wincPerGiB: arweaveWinstonPerGiB?.toString() || "0",
             usdPerGiB: turboUSDPerGiB || 0,
             baseGatewayPrice: arweaveUSDPerGiB,
             turboFeePercentage: turboFeePercentage,
@@ -302,7 +320,7 @@ export function useGatewayInfo() {
 
           setPricingInfo(pricingData);
         } catch (err) {
-          console.warn('Pricing calculation failed:', err);
+          console.warn("Pricing calculation failed:", err);
         }
 
         // Cache the results
@@ -318,9 +336,12 @@ export function useGatewayInfo() {
           timestamp: Date.now(),
         };
         localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch gateway information');
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to fetch gateway information",
+        );
       } finally {
         setLoading(false);
       }
@@ -332,10 +353,10 @@ export function useGatewayInfo() {
   const refresh = async () => {
     setRefreshing(true);
     setError(null);
-    
+
     // Clear cache and refetch
     localStorage.removeItem(cacheKey);
-    
+
     try {
       // Fetch all data fresh
       let uploadData = null;
@@ -352,18 +373,18 @@ export function useGatewayInfo() {
         uploadData = await uploadResponse.json();
         setUploadServiceInfo(uploadData);
       } catch (err) {
-        console.warn('Failed to fetch upload service info:', err);
+        console.warn("Failed to fetch upload service info:", err);
       }
 
       // Fetch gateway info from configured AR.IO gateway
       const config = getCurrentConfig();
-      const gatewayUrl = config.arioGatewayUrl.replace(/\/$/, ''); // Remove trailing slash
+      const gatewayUrl = config.arioGatewayUrl.replace(/\/$/, ""); // Remove trailing slash
       try {
         const gatewayResponse = await fetch(`${gatewayUrl}/ar-io/info`);
         gatewayData = await gatewayResponse.json();
         setGatewayInfo(gatewayData);
       } catch (err) {
-        console.warn('Failed to fetch gateway info:', err);
+        console.warn("Failed to fetch gateway info:", err);
       }
 
       // Fetch peers info from configured gateway
@@ -376,18 +397,21 @@ export function useGatewayInfo() {
         };
         setPeersInfo(peersDataRefresh);
       } catch (err) {
-        console.warn('Failed to fetch peers info:', err);
+        console.warn("Failed to fetch peers info:", err);
       }
 
       // Fetch AR.IO gateway info (if we have gateway wallet address)
       if (gatewayData?.wallet) {
         try {
-          const { getARIO } = await import('../utils');
+          const { getARIO } = await import("../utils");
           const io = getARIO();
           arIOData = await io.getGateway({ address: gatewayData.wallet });
           setArIOGatewayInfo(arIOData);
         } catch (err) {
-          console.warn('Gateway not found in AR.IO network or lookup failed:', err);
+          console.warn(
+            "Gateway not found in AR.IO network or lookup failed:",
+            err,
+          );
           // This is expected for some gateways - they might not be registered in AR.IO
         }
       }
@@ -395,12 +419,12 @@ export function useGatewayInfo() {
       // Fetch Arweave node info from gateway
       if (uploadData?.gateway) {
         try {
-          const gatewayHost = uploadData.gateway.replace('https://', '');
+          const gatewayHost = uploadData.gateway.replace("https://", "");
           const arweaveResponse = await fetch(`https://${gatewayHost}/info`);
           arweaveNodeDataRefresh = await arweaveResponse.json();
           setArweaveNodeInfo(arweaveNodeDataRefresh);
         } catch (err) {
-          console.warn('Failed to fetch Arweave node info:', err);
+          console.warn("Failed to fetch Arweave node info:", err);
         }
       }
 
@@ -423,15 +447,15 @@ export function useGatewayInfo() {
           // from the Arweave network itself, not a gateway's cached/modified price.
           const arweaveResponse = await fetchWithRetry(
             `https://arweave.net/price/${gigabyteInBytes}`,
-            { maxRetries: 2, initialDelayMs: 500 }
+            { maxRetries: 2, initialDelayMs: 500 },
           );
           arweaveWinstonPerGiB = Number(await arweaveResponse.text());
 
           // Fetch AR/USD price from CoinGecko (free tier, may rate limit).
           // Uses retry with backoff to handle 429 responses.
           const cgResponse = await fetchWithRetry(
-            'https://api.coingecko.com/api/v3/simple/price?ids=arweave&vs_currencies=usd',
-            { maxRetries: 3, initialDelayMs: 1000 }
+            "https://api.coingecko.com/api/v3/simple/price?ids=arweave&vs_currencies=usd",
+            { maxRetries: 3, initialDelayMs: 1000 },
           );
           const cgData = await cgResponse.json();
           const arUSDPrice = cgData.arweave?.usd;
@@ -441,25 +465,28 @@ export function useGatewayInfo() {
             arweaveUSDPerGiB = arPerGiB * arUSDPrice;
           }
         } catch (err) {
-          console.warn('[GatewayInfo] Arweave network pricing fetch failed:', err);
+          console.warn(
+            "[GatewayInfo] Arweave network pricing fetch failed:",
+            err,
+          );
         }
 
         // Step 3: Calculate the premium
         let turboFeePercentage = undefined;
 
         if (turboUSDPerGiB > 0 && arweaveUSDPerGiB && arweaveUSDPerGiB > 0) {
-          turboFeePercentage = (1 - (arweaveUSDPerGiB / turboUSDPerGiB)) * 100;
+          turboFeePercentage = (1 - arweaveUSDPerGiB / turboUSDPerGiB) * 100;
         }
 
         pricingDataRefresh = {
-          wincPerGiB: arweaveWinstonPerGiB?.toString() || '0',
+          wincPerGiB: arweaveWinstonPerGiB?.toString() || "0",
           usdPerGiB: turboUSDPerGiB || 0,
           baseGatewayPrice: arweaveUSDPerGiB,
           turboFeePercentage: turboFeePercentage,
         };
         setPricingInfo(pricingDataRefresh);
       } catch (err) {
-        console.warn('Failed to fetch pricing info:', err);
+        console.warn("Failed to fetch pricing info:", err);
       }
 
       // Cache the fresh results
@@ -475,9 +502,12 @@ export function useGatewayInfo() {
         timestamp: Date.now(),
       };
       localStorage.setItem(cacheKey, JSON.stringify(cacheData));
-      
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to refresh gateway information');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Failed to refresh gateway information",
+      );
     } finally {
       setRefreshing(false);
     }

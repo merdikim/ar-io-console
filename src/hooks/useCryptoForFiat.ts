@@ -1,15 +1,15 @@
-import { Currency, TurboUnauthenticatedClient } from '@ardrive/turbo-sdk/web';
-import { useQuery } from '@tanstack/react-query';
+import { Currency, TurboUnauthenticatedClient } from "@ardrive/turbo-sdk/web";
+import { useQuery } from "@tanstack/react-query";
 
 const useFiatToAR = (
   turboUnauthenticatedClient?: TurboUnauthenticatedClient,
-  currency: Currency = 'usd',
+  currency: Currency = "usd",
 ) => {
   const res = useQuery({
-    queryKey: ['fiatToAr', currency],
+    queryKey: ["fiatToAr", currency],
     queryFn: () => {
       if (!turboUnauthenticatedClient) {
-        throw Error('TurboUnauthenticatedClient is not set');
+        throw Error("TurboUnauthenticatedClient is not set");
       }
       return turboUnauthenticatedClient.getFiatToAR({ currency });
     },

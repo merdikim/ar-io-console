@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { SupportedTokenType } from '../constants';
+import { useState, useEffect } from "react";
+import { SupportedTokenType } from "../constants";
 
 interface UsePaymentFlowOptions {
-  walletType: 'arweave' | 'ethereum' | 'solana' | null;
+  walletType: "arweave" | "ethereum" | "solana" | null;
   x402OnlyMode: boolean;
   showConfirmModal: boolean;
   initialJitEnabled?: boolean;
@@ -10,13 +10,16 @@ interface UsePaymentFlowOptions {
 
 interface UsePaymentFlowReturn {
   // Payment tab state
-  paymentTab: 'credits' | 'crypto';
-  setPaymentTab: React.Dispatch<React.SetStateAction<'credits' | 'crypto'>>;
+  paymentTab: "credits" | "crypto";
+  setPaymentTab: React.Dispatch<React.SetStateAction<"credits" | "crypto">>;
 
   // Crypto shortage tracking
   cryptoShortage: { amount: number; tokenType: SupportedTokenType } | null;
   setCryptoShortage: React.Dispatch<
-    React.SetStateAction<{ amount: number; tokenType: SupportedTokenType } | null>
+    React.SetStateAction<{
+      amount: number;
+      tokenType: SupportedTokenType;
+    } | null>
   >;
 
   // JIT payment local state
@@ -49,7 +52,7 @@ export function usePaymentFlow({
   initialJitEnabled = false,
 }: UsePaymentFlowOptions): UsePaymentFlowReturn {
   // Payment method state (Credits vs Crypto tabs)
-  const [paymentTab, setPaymentTab] = useState<'credits' | 'crypto'>('credits');
+  const [paymentTab, setPaymentTab] = useState<"credits" | "crypto">("credits");
 
   // Track crypto shortage details for combined warning
   const [cryptoShortage, setCryptoShortage] = useState<{
@@ -66,21 +69,23 @@ export function usePaymentFlow({
 
   // Selected JIT token - will be set when user opens "Pay with Crypto"
   // NOT set by default to avoid triggering x402 pricing before user interaction
-  const [selectedJitToken, setSelectedJitToken] = useState<SupportedTokenType>(() => {
-    if (walletType === 'arweave') return 'ario';
-    if (walletType === 'solana') return 'solana';
-    // In x402-only mode, only base-usdc is available
-    if (x402OnlyMode) return 'base-usdc';
-    return 'base-ario'; // Default for Ethereum - fast L2 ARIO payments
-  });
+  const [selectedJitToken, setSelectedJitToken] = useState<SupportedTokenType>(
+    () => {
+      if (walletType === "arweave") return "ario";
+      if (walletType === "solana") return "solana";
+      // In x402-only mode, only base-usdc is available
+      if (x402OnlyMode) return "base-usdc";
+      return "base-ario"; // Default for Ethereum - fast L2 ARIO payments
+    },
+  );
 
   // Track if user has sufficient crypto balance for JIT payment
   const [jitBalanceSufficient, setJitBalanceSufficient] = useState(true);
 
   // Switch to base-usdc when x402-only mode is enabled (only option for ETH wallets)
   useEffect(() => {
-    if (x402OnlyMode && walletType === 'ethereum') {
-      setSelectedJitToken('base-usdc');
+    if (x402OnlyMode && walletType === "ethereum") {
+      setSelectedJitToken("base-usdc");
     }
   }, [x402OnlyMode, walletType]);
 
@@ -89,7 +94,7 @@ export function usePaymentFlow({
   // In normal mode, start on Credits tab
   useEffect(() => {
     if (showConfirmModal) {
-      setPaymentTab(x402OnlyMode ? 'crypto' : 'credits');
+      setPaymentTab(x402OnlyMode ? "crypto" : "credits");
       setJitSectionExpanded(x402OnlyMode); // Auto-expand in x402-only mode
       setLocalJitEnabled(x402OnlyMode); // Auto-enable JIT in x402-only mode
     }
@@ -98,12 +103,12 @@ export function usePaymentFlow({
   // Auto-select base-ario ONLY when user explicitly opens "Pay with Crypto" section
   // Reset to base-ario when they close it (unless x402-only mode is active)
   useEffect(() => {
-    if (walletType === 'ethereum') {
+    if (walletType === "ethereum") {
       if (jitSectionExpanded) {
         // Keep current selection when section expands - user can choose via JitTokenSelector
         // Don't auto-switch to base-usdc anymore since base-ario is now the default
       } else if (!x402OnlyMode) {
-        setSelectedJitToken('base-ario'); // Reset to base-ario when section collapses (unless x402-only)
+        setSelectedJitToken("base-ario"); // Reset to base-ario when section collapses (unless x402-only)
       }
     }
   }, [walletType, jitSectionExpanded, x402OnlyMode]);

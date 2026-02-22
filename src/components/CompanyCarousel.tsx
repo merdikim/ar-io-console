@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 
 interface Company {
   name: string;
@@ -44,7 +44,9 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
       setCurrentSlide((prev) => (prev + 1) % companies.length);
     }
     if (distance < -minSwipeDistance) {
-      setCurrentSlide((prev) => (prev - 1 + companies.length) % companies.length);
+      setCurrentSlide(
+        (prev) => (prev - 1 + companies.length) % companies.length,
+      );
     }
   };
 
@@ -62,7 +64,10 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
           style={{ transform: `translateX(-${currentSlide * 100}%)` }}
         >
           {companies.map((company, index) => (
-            <div key={`${company.name}-${index}`} className="w-full flex-shrink-0 px-4">
+            <div
+              key={`${company.name}-${index}`}
+              className="w-full flex-shrink-0 px-4"
+            >
               <a
                 href={company.url}
                 target="_blank"
@@ -70,7 +75,11 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
                 className="bg-card rounded-2xl border border-border/20 p-6 text-center hover:border-primary/30 transition-all group block h-full"
               >
                 <div className="w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                  <img src={company.logo} alt={company.name} className="w-16 h-16 object-contain" />
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="w-16 h-16 object-contain"
+                  />
                 </div>
                 <div className="text-xl font-bold text-foreground mb-3 group-hover:text-primary transition-colors">
                   {company.name}
@@ -89,7 +98,10 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
           style={{ transform: `translateX(-${currentSlide * (100 / 3)}%)` }}
         >
           {companies.map((company, index) => (
-            <div key={`${company.name}-${index}`} className="w-1/3 flex-shrink-0 px-3">
+            <div
+              key={`${company.name}-${index}`}
+              className="w-1/3 flex-shrink-0 px-3"
+            >
               <a
                 href={company.url}
                 target="_blank"
@@ -97,7 +109,11 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
                 className="bg-card rounded-2xl border border-border/20 p-6 text-center hover:border-primary/30 transition-all group block h-full"
               >
                 <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <img src={company.logo} alt={company.name} className="w-12 h-12 object-contain" />
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <div className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {company.name}
@@ -111,7 +127,10 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
 
           {/* Duplicate first few items for seamless loop */}
           {companies.slice(0, 3).map((company, index) => (
-            <div key={`${company.name}-duplicate-${index}`} className="w-1/3 flex-shrink-0 px-3">
+            <div
+              key={`${company.name}-duplicate-${index}`}
+              className="w-1/3 flex-shrink-0 px-3"
+            >
               <a
                 href={company.url}
                 target="_blank"
@@ -119,7 +138,11 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
                 className="bg-card rounded-2xl border border-border/20 p-6 text-center hover:border-primary/30 transition-all group block h-full"
               >
                 <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center">
-                  <img src={company.logo} alt={company.name} className="w-12 h-12 object-contain" />
+                  <img
+                    src={company.logo}
+                    alt={company.name}
+                    className="w-12 h-12 object-contain"
+                  />
                 </div>
                 <div className="text-lg font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
                   {company.name}
@@ -141,15 +164,17 @@ export function CompanyCarousel({ companies }: CompanyCarouselProps) {
             onClick={() => setCurrentSlide(index)}
             className={`relative p-2 transition-all duration-300 ${
               index === currentSlide % companies.length
-                ? 'scale-110'
-                : 'hover:scale-105'
+                ? "scale-110"
+                : "hover:scale-105"
             }`}
           >
-            <div className={`w-2 h-2 rounded-full transition-all duration-300 ${
-              index === currentSlide % companies.length
-                ? 'bg-primary w-6'
-                : 'bg-primary/30 hover:bg-primary/50'
-            }`} />
+            <div
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                index === currentSlide % companies.length
+                  ? "bg-primary w-6"
+                  : "bg-primary/30 hover:bg-primary/50"
+              }`}
+            />
           </button>
         ))}
       </div>

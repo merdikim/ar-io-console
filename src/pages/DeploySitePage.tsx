@@ -1,4 +1,4 @@
-import DeploySitePanel from '../components/panels/DeploySitePanel';
+import DeploySitePanel from "../components/panels/DeploySitePanel";
 
 export default function DeploySitePage() {
   return (

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useStore } from '../store/useStore';
-import { TurboFactory } from '@ardrive/turbo-sdk/web';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useStore } from "../store/useStore";
+import { TurboFactory } from "@ardrive/turbo-sdk/web";
 
 interface X402PricingResult {
   usdcAmount: number; // In human-readable USDC (e.g., 2.5 for 2.5 USDC)
@@ -25,7 +25,8 @@ export function useX402Pricing(fileSizeBytes: number): X402PricingResult {
   }));
 
   const [usdcAmount, setUsdcAmount] = useState<number>(0);
-  const [usdcAmountSmallestUnit, setUsdcAmountSmallestUnit] = useState<string>('0');
+  const [usdcAmountSmallestUnit, setUsdcAmountSmallestUnit] =
+    useState<string>("0");
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,7 +35,7 @@ export function useX402Pricing(fileSizeBytes: number): X402PricingResult {
     // Create unauthenticated client for pricing queries
     // We use base-usdc token type since x402 only supports base-usdc
     return TurboFactory.unauthenticated({
-      token: 'base-usdc',
+      token: "base-usdc",
       paymentServiceConfig: { url: config.paymentServiceUrl },
       uploadServiceConfig: { url: config.uploadServiceUrl },
     });
@@ -43,7 +44,7 @@ export function useX402Pricing(fileSizeBytes: number): X402PricingResult {
   const fetchPricing = useCallback(async () => {
     if (fileSizeBytes <= 0) {
       setUsdcAmount(0);
-      setUsdcAmountSmallestUnit('0');
+      setUsdcAmountSmallestUnit("0");
       setLoading(false);
       setError(null);
       return;
@@ -69,17 +70,18 @@ export function useX402Pricing(fileSizeBytes: number): X402PricingResult {
       const priceInSmallestUnit = Math.ceil(priceInUSDC * 1_000_000).toString();
 
       console.log(
-        `[X402 Pricing] Price: ${priceInUSDC} USDC (${priceInSmallestUnit} mUSDC) for ${fileSizeBytes} bytes`
+        `[X402 Pricing] Price: ${priceInUSDC} USDC (${priceInSmallestUnit} mUSDC) for ${fileSizeBytes} bytes`,
       );
 
       setUsdcAmount(priceInUSDC);
       setUsdcAmountSmallestUnit(priceInSmallestUnit);
     } catch (err) {
-      console.error('[X402 Pricing] Error fetching pricing:', err);
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch x402 pricing';
+      console.error("[X402 Pricing] Error fetching pricing:", err);
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to fetch x402 pricing";
       setError(errorMessage);
       setUsdcAmount(0);
-      setUsdcAmountSmallestUnit('0');
+      setUsdcAmountSmallestUnit("0");
     } finally {
       setLoading(false);
     }

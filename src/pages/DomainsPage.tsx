@@ -1,4 +1,4 @@
-import ArNSPanel from '../components/panels/ArNSPanel';
+import ArNSPanel from "../components/panels/ArNSPanel";
 
 export default function DomainsPage() {
   return (

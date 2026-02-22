@@ -1,4 +1,4 @@
-import { FC, ReactNode } from 'react';
+import { FC, ReactNode } from "react";
 
 interface FormEntryProps {
   name: string;
@@ -7,7 +7,12 @@ interface FormEntryProps {
   errorText?: string;
 }
 
-const FormEntry: FC<FormEntryProps> = ({ name, label, children, errorText }) => {
+const FormEntry: FC<FormEntryProps> = ({
+  name,
+  label,
+  children,
+  errorText,
+}) => {
   return (
     <div className="flex flex-col gap-1">
       <label className="text-sm text-foreground/80" htmlFor={name}>

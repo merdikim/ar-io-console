@@ -1,4 +1,4 @@
-import BrowsePanel from '@/features/browse/components/BrowsePanel';
+import BrowsePanel from "@/features/browse/components/BrowsePanel";
 
 export default function BrowsePage() {
   return <BrowsePanel />;

@@ -1,28 +1,28 @@
-import { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
-import { Layout } from './components/Layout';
-import { useFreeUploadLimit } from './hooks/useFreeUploadLimit';
-import { useTheme } from './hooks/useTheme';
-import LandingPage from './pages/LandingPage';
-import TopUpPage from './pages/TopUpPage';
-import UploadPage from './pages/UploadPage';
-import CapturePage from './pages/CapturePage';
-import ShareCreditsPage from './pages/ShareCreditsPage';
-import GiftPage from './pages/GiftPage';
-import DomainsPage from './pages/DomainsPage';
-import CalculatorPage from './pages/CalculatorPage';
-import ServicesCalculatorPage from './pages/ServicesCalculatorPage';
-import BalanceCheckerPage from './pages/BalanceCheckerPage';
-import RedeemPage from './pages/RedeemPage';
-import GatewayInfoPage from './pages/GatewayInfoPage';
-import DeploySitePage from './pages/DeploySitePage';
-import RecentDeploymentsPage from './pages/RecentDeploymentsPage';
-import AccountPage from './pages/AccountPage';
-import TryItNowPage from './pages/TryItNowPage';
-import BrowsePage from './pages/BrowsePage';
-import { useStore } from './store/useStore';
-import { WalletProviders } from './providers/WalletProviders';
-import { useWalletAccountListener } from './hooks/useWalletAccountListener';
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
+import { Layout } from "./components/Layout";
+import { useFreeUploadLimit } from "./hooks/useFreeUploadLimit";
+import { useTheme } from "./hooks/useTheme";
+import LandingPage from "./pages/LandingPage";
+import TopUpPage from "./pages/TopUpPage";
+import UploadPage from "./pages/UploadPage";
+import CapturePage from "./pages/CapturePage";
+import ShareCreditsPage from "./pages/ShareCreditsPage";
+import GiftPage from "./pages/GiftPage";
+import DomainsPage from "./pages/DomainsPage";
+import CalculatorPage from "./pages/CalculatorPage";
+import ServicesCalculatorPage from "./pages/ServicesCalculatorPage";
+import BalanceCheckerPage from "./pages/BalanceCheckerPage";
+import RedeemPage from "./pages/RedeemPage";
+import GatewayInfoPage from "./pages/GatewayInfoPage";
+import DeploySitePage from "./pages/DeploySitePage";
+import RecentDeploymentsPage from "./pages/RecentDeploymentsPage";
+import AccountPage from "./pages/AccountPage";
+import TryItNowPage from "./pages/TryItNowPage";
+import BrowsePage from "./pages/BrowsePage";
+import { useStore } from "./store/useStore";
+import { WalletProviders } from "./providers/WalletProviders";
+import { useWalletAccountListener } from "./hooks/useWalletAccountListener";
 
 // Payment callback handler component
 function PaymentCallbackHandler() {
@@ -31,17 +31,19 @@ function PaymentCallbackHandler() {
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    const paymentStatus = urlParams.get('payment');
-    
-    if (paymentStatus === 'success') {
+    const paymentStatus = urlParams.get("payment");
+
+    if (paymentStatus === "success") {
       // Show success message and refresh balance
       if (address) {
-        alert('Payment successful! Your credits have been added to your account.');
+        alert(
+          "Payment successful! Your credits have been added to your account.",
+        );
         // Trigger a balance refresh by dispatching a custom event
-        window.dispatchEvent(new CustomEvent('refresh-balance'));
+        window.dispatchEvent(new CustomEvent("refresh-balance"));
       }
-    } else if (paymentStatus === 'cancelled') {
-      alert('Payment cancelled.');
+    } else if (paymentStatus === "cancelled") {
+      alert("Payment cancelled.");
     }
   }, [location.search, address]);
 
@@ -74,7 +76,10 @@ function AppRoutes() {
           <Route path="gift" element={<GiftPage />} />
           <Route path="domains" element={<DomainsPage />} />
           <Route path="calculator" element={<CalculatorPage />} />
-          <Route path="services-calculator" element={<ServicesCalculatorPage />} />
+          <Route
+            path="services-calculator"
+            element={<ServicesCalculatorPage />}
+          />
           <Route path="balances" element={<BalanceCheckerPage />} />
           <Route path="account" element={<AccountPage />} />
           <Route path="redeem" element={<RedeemPage />} />

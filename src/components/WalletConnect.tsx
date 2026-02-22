@@ -1,25 +1,25 @@
-import { useState } from 'react';
-import { Wallet, LogOut, ChevronDown } from 'lucide-react';
-import { useStore } from '@/store/useStore';
+import { useState } from "react";
+import { Wallet, LogOut, ChevronDown } from "lucide-react";
+import { useStore } from "@/store/useStore";
 
 export function WalletConnect() {
   const { address, setAddress, clearAddress } = useStore();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  
+
   const connectWallet = async () => {
     try {
       // Check for Wander
       if (window.arweaveWallet) {
         await window.arweaveWallet.connect([
-          'ACCESS_ADDRESS',
-          'SIGN_TRANSACTION',
-          'ACCESS_PUBLIC_KEY',
+          "ACCESS_ADDRESS",
+          "SIGN_TRANSACTION",
+          "ACCESS_PUBLIC_KEY",
         ]);
         const addr = await window.arweaveWallet.getActiveAddress();
-        setAddress(addr, 'arweave');
+        setAddress(addr, "arweave");
       }
     } catch (error) {
-      console.error('Failed to connect wallet:', error);
+      console.error("Failed to connect wallet:", error);
     }
   };
 
@@ -54,7 +54,7 @@ export function WalletConnect() {
         {formatAddress(address)}
         <ChevronDown className="w-4 h-4" />
       </button>
-      
+
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 w-48 card p-2">
           <button

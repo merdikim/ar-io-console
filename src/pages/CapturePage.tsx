@@ -1,4 +1,4 @@
-import CapturePanel from '../components/panels/CapturePanel';
+import CapturePanel from "../components/panels/CapturePanel";
 
 export default function CapturePage() {
   return (

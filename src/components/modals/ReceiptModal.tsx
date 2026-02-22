@@ -1,9 +1,22 @@
-import { useState, useEffect } from 'react';
-import { X, ExternalLink, Receipt, FileText, Clock, RefreshCw, CheckCircle, Archive, XCircle, HelpCircle, Code, Download } from 'lucide-react';
-import BaseModal from './BaseModal';
-import CopyButton from '../CopyButton';
-import { useUploadStatus, UploadStatus } from '../../hooks/useUploadStatus';
-import { getArweaveUrl } from '../../utils';
+import { useState, useEffect } from "react";
+import {
+  X,
+  ExternalLink,
+  Receipt,
+  FileText,
+  Clock,
+  RefreshCw,
+  CheckCircle,
+  Archive,
+  XCircle,
+  HelpCircle,
+  Code,
+  Download,
+} from "lucide-react";
+import BaseModal from "./BaseModal";
+import CopyButton from "../CopyButton";
+import { useUploadStatus, UploadStatus } from "../../hooks/useUploadStatus";
+import { getArweaveUrl } from "../../utils";
 
 interface ReceiptModalProps {
   onClose: () => void;
@@ -12,8 +25,13 @@ interface ReceiptModalProps {
   initialStatus?: UploadStatus;
 }
 
-const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModalProps) => {
-  const [activeTab, setActiveTab] = useState<'summary' | 'details'>('summary');
+const ReceiptModal = ({
+  onClose,
+  receipt,
+  uploadId,
+  initialStatus,
+}: ReceiptModalProps) => {
+  const [activeTab, setActiveTab] = useState<"summary" | "details">("summary");
   const {
     checkUploadStatus,
     statusChecking,
@@ -22,7 +40,7 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
     formatWinc,
     getStatusColor,
     getStatusIcon,
-    getStatusDescription
+    getStatusDescription,
   } = useUploadStatus();
 
   // Current status (either from initial prop or fetched)
@@ -37,22 +55,22 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
   }, [uploadId, currentStatus, checkUploadStatus]);
 
   const formatTimestamp = (timestamp?: number) => {
-    if (!timestamp) return 'N/A';
+    if (!timestamp) return "N/A";
     return new Date(timestamp).toLocaleString();
   };
 
   // Helper to render status icon
   const renderStatusIcon = (iconType: string, colorClass: string) => {
     switch (iconType) {
-      case 'check-circle':
+      case "check-circle":
         return <CheckCircle className={`w-5 h-5 ${colorClass}`} />;
-      case 'clock':
+      case "clock":
         return <Clock className={`w-5 h-5 ${colorClass}`} />;
-      case 'archive':
+      case "archive":
         return <Archive className={`w-5 h-5 ${colorClass}`} />;
-      case 'x-circle':
+      case "x-circle":
         return <XCircle className={`w-5 h-5 ${colorClass}`} />;
-      case 'help-circle':
+      case "help-circle":
         return <HelpCircle className={`w-5 h-5 ${colorClass}`} />;
       default:
         return <Clock className={`w-5 h-5 ${colorClass}`} />;
@@ -65,11 +83,13 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
       uploadId,
       receipt,
       status: currentStatus,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const blob = new Blob([JSON.stringify(data, null, 2)], {
+      type: "application/json",
+    });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `receipt-${uploadId.substring(0, 8)}.json`;
     document.body.appendChild(a);
@@ -89,7 +109,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
             </div>
             <div className="min-w-0 flex-1">
               <h3 className="text-lg sm:text-xl font-bold">Upload Receipt</h3>
-              <p className="text-xs sm:text-sm text-foreground/80">Transaction status and details</p>
+              <p className="text-xs sm:text-sm text-foreground/80">
+                Transaction status and details
+              </p>
             </div>
           </div>
           <button
@@ -103,22 +125,22 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
         {/* Simplified Tabs */}
         <div className="flex border-b border-border/20">
           <button
-            onClick={() => setActiveTab('summary')}
+            onClick={() => setActiveTab("summary")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === 'summary'
-                ? 'text-primary border-primary bg-primary/5'
-                : 'text-foreground/80 hover:text-foreground hover:bg-card/50 border-transparent'
+              activeTab === "summary"
+                ? "text-primary border-primary bg-primary/5"
+                : "text-foreground/80 hover:text-foreground hover:bg-card/50 border-transparent"
             }`}
           >
             <FileText className="w-4 h-4 inline mr-2" />
             Summary
           </button>
           <button
-            onClick={() => setActiveTab('details')}
+            onClick={() => setActiveTab("details")}
             className={`flex-1 px-4 py-3 text-sm font-medium transition-colors border-b-2 ${
-              activeTab === 'details'
-                ? 'text-primary border-primary bg-primary/5'
-                : 'text-foreground/80 hover:text-foreground hover:bg-card/50 border-transparent'
+              activeTab === "details"
+                ? "text-primary border-primary bg-primary/5"
+                : "text-foreground/80 hover:text-foreground hover:bg-card/50 border-transparent"
             }`}
           >
             <Code className="w-4 h-4 inline mr-2" />
@@ -128,7 +150,7 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
 
         {/* Content */}
         <div className="flex-1 overflow-auto">
-          {activeTab === 'summary' ? (
+          {activeTab === "summary" ? (
             /* Enhanced Summary Tab - User-friendly overview */
             <div className="p-4 sm:p-6 space-y-6">
               {/* Status Section - Clean status display */}
@@ -136,17 +158,31 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div>
-                      {renderStatusIcon(getStatusIcon(currentStatus.status, currentStatus.info), getStatusColor(currentStatus.status, currentStatus.info))}
+                      {renderStatusIcon(
+                        getStatusIcon(currentStatus.status, currentStatus.info),
+                        getStatusColor(
+                          currentStatus.status,
+                          currentStatus.info,
+                        ),
+                      )}
                     </div>
                     <div>
-                      <div className={`text-lg font-semibold ${getStatusColor(currentStatus.status, currentStatus.info)}`}>
-                        {currentStatus.status === 'FINALIZED' ? 'Permanently Stored' :
-                         currentStatus.status === 'CONFIRMED' ? 'Processing' :
-                         currentStatus.status === 'FAILED' ? 'Upload Failed' :
-                         'Checking Status'}
+                      <div
+                        className={`text-lg font-semibold ${getStatusColor(currentStatus.status, currentStatus.info)}`}
+                      >
+                        {currentStatus.status === "FINALIZED"
+                          ? "Permanently Stored"
+                          : currentStatus.status === "CONFIRMED"
+                            ? "Processing"
+                            : currentStatus.status === "FAILED"
+                              ? "Upload Failed"
+                              : "Checking Status"}
                       </div>
                       <p className="text-sm text-foreground/80">
-                        {getStatusDescription(currentStatus.status, currentStatus.info)}
+                        {getStatusDescription(
+                          currentStatus.status,
+                          currentStatus.info,
+                        )}
                       </p>
                     </div>
                   </div>
@@ -156,7 +192,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                     className="p-2 hover:bg-card rounded transition-colors disabled:opacity-50"
                     title="Refresh status"
                   >
-                    <RefreshCw className={`w-4 h-4 text-foreground/80 ${isLoadingStatus ? 'animate-spin' : ''}`} />
+                    <RefreshCw
+                      className={`w-4 h-4 text-foreground/80 ${isLoadingStatus ? "animate-spin" : ""}`}
+                    />
                   </button>
                 </div>
               )}
@@ -173,7 +211,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                   <div className="grid grid-cols-2 gap-4">
                     {currentStatus?.rawContentLength && (
                       <div>
-                        <div className="text-xs text-foreground/80 mb-1">Size</div>
+                        <div className="text-xs text-foreground/80 mb-1">
+                          Size
+                        </div>
                         <div className="text-sm text-foreground">
                           {formatFileSize(currentStatus.rawContentLength)}
                         </div>
@@ -182,9 +222,14 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
 
                     {currentStatus?.payloadContentType && (
                       <div>
-                        <div className="text-xs text-foreground/80 mb-1">Type</div>
+                        <div className="text-xs text-foreground/80 mb-1">
+                          Type
+                        </div>
                         <div className="text-sm text-foreground">
-                          {currentStatus.payloadContentType.split('/').pop()?.toUpperCase() || 'File'}
+                          {currentStatus.payloadContentType
+                            .split("/")
+                            .pop()
+                            ?.toUpperCase() || "File"}
                         </div>
                       </div>
                     )}
@@ -193,7 +238,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                   {/* Upload Cost */}
                   {(currentStatus?.winc || receipt?.winc) && (
                     <div>
-                      <div className="text-xs text-foreground/80 mb-1">Upload Cost</div>
+                      <div className="text-xs text-foreground/80 mb-1">
+                        Upload Cost
+                      </div>
                       <div className="text-sm font-medium text-foreground">
                         {formatWinc(currentStatus?.winc || receipt?.winc)}
                       </div>
@@ -203,7 +250,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                   {/* Upload Time */}
                   {receipt?.timestamp && (
                     <div>
-                      <div className="text-xs text-foreground/80 mb-1">Uploaded</div>
+                      <div className="text-xs text-foreground/80 mb-1">
+                        Uploaded
+                      </div>
                       <div className="text-sm text-foreground">
                         {formatTimestamp(receipt.timestamp)}
                       </div>
@@ -223,7 +272,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                   {/* Data Item ID */}
                   <div className="bg-card rounded-2xl p-3">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs text-foreground/80">Data Item ID</span>
+                      <span className="text-xs text-foreground/80">
+                        Data Item ID
+                      </span>
                       <div className="flex items-center gap-1">
                         <CopyButton textToCopy={uploadId} />
                       </div>
@@ -237,7 +288,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
                   {currentStatus?.bundleId && (
                     <div className="bg-card rounded-2xl p-3">
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs text-foreground/80">Parent Bundle ID</span>
+                        <span className="text-xs text-foreground/80">
+                          Parent Bundle ID
+                        </span>
                         <CopyButton textToCopy={currentStatus.bundleId} />
                       </div>
                       <div className="font-mono text-xs text-foreground break-all">
@@ -274,7 +327,9 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
               {/* Receipt JSON */}
               <div>
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-sm font-semibold text-foreground">Upload Receipt</h4>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    Upload Receipt
+                  </h4>
                   <CopyButton textToCopy={JSON.stringify(receipt, null, 2)} />
                 </div>
                 <div className="bg-card rounded-2xl p-3 border border-border/20">
@@ -288,8 +343,12 @@ const ReceiptModal = ({ onClose, receipt, uploadId, initialStatus }: ReceiptModa
               {currentStatus && (
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="text-sm font-semibold text-foreground">Status Response</h4>
-                    <CopyButton textToCopy={JSON.stringify(currentStatus, null, 2)} />
+                    <h4 className="text-sm font-semibold text-foreground">
+                      Status Response
+                    </h4>
+                    <CopyButton
+                      textToCopy={JSON.stringify(currentStatus, null, 2)}
+                    />
                   </div>
                   <div className="bg-card rounded-2xl p-3 border border-border/20">
                     <pre className="font-mono text-[10px] sm:text-xs text-foreground overflow-auto max-h-48 whitespace-pre-wrap break-words">
